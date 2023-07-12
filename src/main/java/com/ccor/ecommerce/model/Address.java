@@ -8,10 +8,12 @@ import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
 @ToString
 @Entity
+@EqualsAndHashCode
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,4 +21,5 @@ public class Address {
     private String street;
     private String country;
     private String postalCode;
+
 }

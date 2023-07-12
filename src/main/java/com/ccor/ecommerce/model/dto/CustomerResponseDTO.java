@@ -6,8 +6,6 @@ public record CustomerResponseDTO(
         String lastName,
         String cellphone,
         String email,
-        String username,
-        String pwd,
-        AddressResponseDTO address
+        String username
 ) {
 }

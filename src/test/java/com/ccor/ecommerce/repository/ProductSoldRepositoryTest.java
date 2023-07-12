@@ -40,9 +40,9 @@ class ProductSoldRepositoryTest extends Person {
 
     @Test
     void findProductSoldsByBarCode() {
-        List<ProductSold> solds1 = productSoldRepository.findProductSoldsByBarCode("SDC26493801728");
+        List<ProductSold> solds1 = productSoldRepository.findProductsSoldByBarCode("SDC26493801728");
         assertTrue(!solds1.isEmpty() || solds1!=null);
-        List<ProductSold> solds2 = productSoldRepository.findProductSoldsByBarCode("SDC2649380178");
+        List<ProductSold> solds2 = productSoldRepository.findProductsSoldByBarCode("SDC2649380178");
         assertFalse(solds1.isEmpty() || solds1==null);
     }
 }

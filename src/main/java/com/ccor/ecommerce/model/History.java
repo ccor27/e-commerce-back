@@ -8,6 +8,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
 @ToString
@@ -16,7 +17,6 @@ public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long id_customer;
     @OneToMany
     @JoinColumn(name = "sale_id")
     private List<Sale> sales;

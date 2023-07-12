@@ -8,7 +8,7 @@ import java.util.List;
 public record SaleResponseDTO(
         Long id,
         String concept,
-        List<ProductSold> products,
+        List<ProductSoldResponseDTO> products,
         Date createAt
 ) {
 }
