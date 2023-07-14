@@ -21,7 +21,11 @@ class CustomerRepositoryTest {
 
     @BeforeAll
       void setUp() {
-        History history = new History(null,null,new ArrayList<>(),new Date());
+        History history = History.builder()
+                .sales(new ArrayList<>())
+                .modificationDate(new Date())
+                .build();
+
         Address address = new Address(null,"spain avenue","Spain","28903");
         List<Address> addresses = new ArrayList<>();
         addresses.add(address);
@@ -61,7 +65,7 @@ class CustomerRepositoryTest {
 
     @Test
     void findCustomerAddress() {
-        assertTrue(customerRepository.findCustomerAddress(1L).isPresent());
+        org.assertj.core.api.Assertions.assertThat(customerRepository.findCustomerAddress(1L)).isNotNull();
     }
 
     @Test
@@ -78,7 +82,7 @@ class CustomerRepositoryTest {
 
     @Test
     void findCustomerById() {
-        assertTrue(customerRepository.findCustomerById(1L).isPresent());
-        assertFalse(customerRepository.findCustomerById(2L).isPresent());
+        assertTrue(customerRepository.findById(1L).isPresent());
+        assertFalse(customerRepository.findById(2L).isPresent());
     }
 }

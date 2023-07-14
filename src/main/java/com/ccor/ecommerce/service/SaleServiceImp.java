@@ -106,6 +106,7 @@ public class SaleServiceImp implements ISaleService{
     }
 
     @Override
+    @Transactional
     public SaleResponseDTO addProductSold(ProductSoldRequestDTO productSoldRequesDTO, Long id) {
         Sale sale = saleRepository.findById(id).orElse(null);
         if(sale!=null){
@@ -138,9 +139,15 @@ public class SaleServiceImp implements ISaleService{
     @Override
     public List<ProductSoldResponseDTO> findProductsSold(Long id) {
         if(saleRepository.existsById(id)){
-            return saleRepository.findSaleProductsSold(id).stream().map(productSold -> {
-                return productSoldDTOMapper.apply(productSold);
-            }).collect(Collectors.toList());
+            List<ProductSold> list = saleRepository.findSaleProductsSold(id);
+            if(list!=null && !list.isEmpty()){
+                return list.stream().map(productSold -> {
+                    return productSoldDTOMapper.apply(productSold);
+                }).collect(Collectors.toList());
+            }else{
+                System.out.println("else de lilst");
+                return null;
+            }
         }else{
             return null;
         }

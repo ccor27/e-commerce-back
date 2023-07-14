@@ -14,10 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,18 +62,19 @@ public class CustomerServiceImp implements ICustomerService{
 
     @Override
     public boolean remove(Long id) {
-        Customer customer = customerRepository.findById(id).orElse(null);
-        if(customer!=null){
-          customer.setHistory(null);
-          customerRepository.delete(customer);
-          return true;
-        }else{
+        Optional<Customer> customerOptional = customerRepository.findById(id);
+        if (customerOptional.isPresent()) {
+            Customer customer = customerOptional.get();
+            customer.setHistory(null);
+            customerRepository.delete(customer);
+            return true;
+        } else {
             return false;
         }
     }
 
     @Override
-    public CustomerResponseDTO editData(CustomerResponseDTO responseDTO, Long id) {
+    public CustomerResponseDTO editData(CustomerRequestEditDTO responseDTO, Long id) {
         Customer customer = customerRepository.findById(id).orElse(null);
         if(customer!=null){
             customer.setName(responseDTO.name());
@@ -91,8 +89,9 @@ public class CustomerServiceImp implements ICustomerService{
 
     @Override
     public CustomerResponseDTO findById(Long id) {
-        if(customerRepository.existsById(id)){
-            return customerDTOMapper.apply(customerRepository.findById(id).get());
+        Customer customer = customerRepository.findById(id).orElse(null);
+        if(customer!=null){
+            return customerDTOMapper.apply(customer);
         }else{
             return null;
         }
@@ -126,7 +125,7 @@ public class CustomerServiceImp implements ICustomerService{
     public List<AddressResponseDTO> findAddress(Long id) {
         Customer customer = customerRepository.findById(id).orElse(null);
         if(customer!=null && customer.getAddress()!=null){
-            return customer.getAddress().stream().map(address -> {
+            return customerRepository.findCustomerAddress(id).stream().map(address -> {
                 return addressDTOMapper.apply(address);
             }).collect(Collectors.toList());
         }else{
@@ -139,7 +138,7 @@ public class CustomerServiceImp implements ICustomerService{
     public List<CreditCardResponseDTO> findCards(Long id) {
         Customer customer = customerRepository.findById(id).orElse(null);
         if(customer!=null && customer.getCards()!=null){
-            return customer.getCards().stream().map(card -> {
+            return customerRepository.findCustomerCreditCards(id).stream().map(card -> {
                 return creditCardDTOMapper.apply(card);
             }).collect(Collectors.toList());
         }else{
@@ -156,18 +155,6 @@ public class CustomerServiceImp implements ICustomerService{
             return null;
         }
     }
-
-    @Override
-    public CustomerResponseDTO changeUsername(String username, Long id) {
-        Customer customer = customerRepository.findById(id).orElse(null);
-        if(customer!=null){
-            customer.setUsername(username);
-            return customerDTOMapper.apply(customerRepository.save(customer));
-        }else{
-            return null;
-        }
-    }
-
     @Override
     public CustomerResponseDTO changePwd(String pwd, Long id) {
         //TODO: I don't know very well if this is correct
@@ -187,17 +174,25 @@ public class CustomerServiceImp implements ICustomerService{
         if(customer!=null && dto!=null){
             if(dto.id()!=null){
                 //the address exist
-                 Address address = addressRepository.findById(dto.id()).orElse(null);
-                 if(address!=null){
-                     customer.getAddress().add(address);
-                     return findAddress(id);
+                 Address addressFound = addressRepository.findById(dto.id()).orElse(null);
+                 if(addressFound!=null){
+                     customer.getAddress().add(addressFound);
+                     Customer customerEdited = customerRepository.save(customer);
+                     return customerEdited.getAddress().stream().map(address -> {
+                         return addressDTOMapper.apply(address);
+                     }).collect(Collectors.toList());
                  }else{
+                     System.out.println("address doesn't exist");
                      return null;
                  }
             }else{
                 //the address doesn't exist
-                customer.getAddress().add(new Address(null,dto.street(),dto.country(),dto.postalCode()));
-                return findAddress(id);
+                Address a = new Address(null,dto.street(),dto.country(),dto.postalCode());
+                customer.getAddress().add(a);
+                Customer customerEdited = customerRepository.save(customer);
+                return customerEdited.getAddress().stream().map(address -> {
+                    return addressDTOMapper.apply(address);
+                }).collect(Collectors.toList());
             }
         }else{
             return null;
@@ -211,6 +206,7 @@ public class CustomerServiceImp implements ICustomerService{
         Customer customer = customerRepository.findById(id_customer).orElse(null);
         if(customer!=null && address!=null){
             customer.getAddress().remove(address);
+            customerRepository.save(customer);
             return true;
         }else{
             return false;
@@ -224,19 +220,24 @@ public class CustomerServiceImp implements ICustomerService{
         if(customer!=null && creditCardResponseDTO!=null){
             if(creditCardResponseDTO.id()!=null){
                 //card exist
-                CreditCard card = creditCardRepository.findById(creditCardResponseDTO.id()).orElse(null);
-                if(card!=null){
-                    customer.getCards().add(card);
-                    customerRepository.save(customer);
-                    return findCards(id);
+                CreditCard cardFound = creditCardRepository.findById(creditCardResponseDTO.id()).orElse(null);
+                if(cardFound!=null){
+                    customer.getCards().add(cardFound);
+                    Customer customerEdited = customerRepository.save(customer);
+                    return customerEdited.getCards().stream().map(card -> {
+                        return creditCardDTOMapper.apply(card);
+                    }).collect(Collectors.toList());
                 }else{
                   return null;
                 }
             }else{
                 //card doesn't exist
-                CreditCard card = new CreditCard(null,creditCardResponseDTO.number(),typeCard(creditCardResponseDTO.type()));
-                customer.getCards().add(card);
-                return findCards(id);
+                CreditCard newCard = new CreditCard(null,creditCardResponseDTO.number(),typeCard(creditCardResponseDTO.type()));
+                customer.getCards().add(newCard);
+                Customer customerEdited = customerRepository.save(customer);
+                return customerEdited.getCards().stream().map(card -> {
+                    return creditCardDTOMapper.apply(card);
+                }).collect(Collectors.toList());
             }
         }else{
            return null;
@@ -258,6 +259,7 @@ public class CustomerServiceImp implements ICustomerService{
         Customer customer = customerRepository.findById(id_customer).orElse(null);
         if(customer!=null && card!=null){
             customer.getCards().remove(card);
+            customerRepository.save(customer);
             return true;
         }else{
             return false;
