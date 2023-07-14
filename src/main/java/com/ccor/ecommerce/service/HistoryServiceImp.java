@@ -10,9 +10,11 @@ import com.ccor.ecommerce.repository.HistoryRepository;
 import com.ccor.ecommerce.repository.SaleRepository;
 import com.ccor.ecommerce.service.mapper.HistoryDTOMapper;
 import com.ccor.ecommerce.service.mapper.SaleDTOMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +33,8 @@ public class HistoryServiceImp implements IHistoryService{
     public HistoryResponseDTO save(HistoryRequestDTO historyRequestDTO) {
         if(historyRequestDTO!=null){
             History history = new History().builder()
-                    .modificationDate(new Date())
+                    .sales(new ArrayList<>())
+                    .modificationDate(historyRequestDTO.dateModification())
                     .build();
             return historyDTOMapper.apply(historyRepository.save(history));
         }else{
@@ -84,13 +87,16 @@ public class HistoryServiceImp implements IHistoryService{
     }
 
     @Override
+    @Transactional
     public List<SaleResponseDTO> addSale(SaleResponseDTO saleResponseDTO, Long id) {
         History history = historyRepository.findById(id).orElse(null);
         Sale sale = saleRepository.findById(saleResponseDTO.id()).orElse(null);
         if(history!=null && sale!=null){
             history.getSales().add(sale);
-            historyRepository.save(history);
-            return findSales(history.getId());
+            History historyEdited = historyRepository.save(history);
+            return historyEdited.getSales().stream().map(s -> {
+                return saleDTOMapper.apply(s);
+            }).collect(Collectors.toList());
         }else{
             return null;
         }
@@ -98,6 +104,7 @@ public class HistoryServiceImp implements IHistoryService{
     }
 
     @Override
+    @Transactional
     public boolean removeSale(Long id_sale, Long id_history) {
         History history = historyRepository.findById(id_history).orElse(null);
         Sale sale = saleRepository.findById(id_sale).orElse(null);

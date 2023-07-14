@@ -60,7 +60,7 @@ class AddressServiceImpTest {
     @Test
     void edit() {
         Long id =1L;
-        AddressRequestDTO requestDTO = new AddressRequestDTO("new street","new country","28903");
+    AddressRequestDTO requestDTO = new AddressRequestDTO("new street","new country","28903");
         Address existAddress = Address.builder()
                 .id(id)
                 .street("street")
@@ -73,7 +73,8 @@ class AddressServiceImpTest {
                 .country("new country")
                 .postalCode("28903")
                 .build();
-        AddressResponseDTO expectedAddressDTO = new AddressResponseDTO(1L,"new street","new country","28903");        when(addressRepository.findById(id)).thenReturn(Optional.ofNullable(existAddress));
+        AddressResponseDTO expectedAddressDTO = new AddressResponseDTO(1L,"new street","new country","28903");
+        when(addressRepository.findById(id)).thenReturn(Optional.ofNullable(existAddress));
         when(addressRepository.save(any(Address.class))).thenReturn(updatedAddress);
         when(addressDTOMapper.apply(updatedAddress)).thenReturn(expectedAddressDTO);
         AddressResponseDTO actualAddressDTO = addressServiceImp.edit(requestDTO,1L);

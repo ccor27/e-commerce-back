@@ -23,7 +23,10 @@ class TokenRepositoryTest extends Person {
     @BeforeAll
     void setUp() {
 
-        History history = new History(null,null,new ArrayList<>(),new Date());
+        History history = History.builder()
+                .sales(new ArrayList<>())
+                .modificationDate(new Date())
+                .build();
         Address address = new Address(null,"spain avenue","Spain","28903");
         List<Address> addresses = new ArrayList<>();
         addresses.add(address);

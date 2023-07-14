@@ -54,7 +54,12 @@ public class CreditCardServiceImp implements ICreditCardService{
 
     @Override
     public CreditCardResponseDTO findById(Long id) {
-        return creditCardRepository.existsById(id) ? dtoMapper.apply(creditCardRepository.findById(id).orElse(null)) : null;
+        CreditCard card = creditCardRepository.findById(id).orElse(null);
+        if(card!=null){
+            return dtoMapper.apply(card);
+        }else{
+            return null;
+        }
     }
 
     @Override
@@ -65,8 +70,9 @@ public class CreditCardServiceImp implements ICreditCardService{
 
     @Override
     public List<CreditCardResponseDTO> findAll() {
-        if(creditCardRepository.findAll()!=null){
-            return creditCardRepository.findAll().stream().map(creditCard -> {
+        List<CreditCard> cards = creditCardRepository.findAll();
+        if(cards!=null){
+            return cards.stream().map(creditCard -> {
                 return dtoMapper.apply(creditCard);
             }).collect(Collectors.toList());
         }else{
@@ -77,8 +83,9 @@ public class CreditCardServiceImp implements ICreditCardService{
 
     @Override
     public List<CreditCardResponseDTO> findCardsByType(String type) {
-        if(creditCardRepository.findCreditCardsByTypeCard(typeCard(type))!=null){
-            return creditCardRepository.findCreditCardsByTypeCard(typeCard(type)).stream().map(creditCard -> {
+        List<CreditCard> cards = creditCardRepository.findCreditCardsByTypeCard(typeCard(type));
+        if(cards!=null){
+            return cards.stream().map(creditCard -> {
                 return dtoMapper.apply(creditCard);
             }).collect(Collectors.toList());
         }else{

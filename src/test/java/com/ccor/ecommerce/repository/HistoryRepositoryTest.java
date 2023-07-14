@@ -24,7 +24,11 @@ class HistoryRepositoryTest extends Person {
         ProductSold productSold1 = new ProductSold(null,"AHD26493874728","Computer",10,20000);
         ProductSold productSold2 = new ProductSold(null,"SDC26493801728","Tv",15,15000);
         Sale sale = new Sale(null,"Things to home", Arrays.asList(productSold1,productSold2),new Date());
-        History history = new History(null,null,Arrays.asList(sale),new Date());
+        History history = History.builder()
+                .sales(Arrays.asList(sale))
+                .modificationDate(new Date())
+                .build();
+        history.setModificationDate(new Date());
         historyRepository.save(history);
     }
 

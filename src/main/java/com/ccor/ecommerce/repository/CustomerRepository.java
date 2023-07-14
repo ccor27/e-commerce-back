@@ -17,7 +17,7 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
     @Query("SELECT c.history FROM Customer c WHERE c.id= :customerId")
     Optional<History> findCustomerHistory(@Param("customerId")Long id);
     @Query("SELECT c.address FROM Customer c WHERE c.id= :customerId")
-    Optional<Address> findCustomerAddress(@Param("customerId")Long id);
+    List<Address> findCustomerAddress(@Param("customerId")Long id);
     @Query("SELECT c.cards FROM Customer c WHERE c.id= :customerId")
     List<CreditCard> findCustomerCreditCards(@Param("customerId")Long id);
     Optional<Customer> findCustomerByEmail(String email);
