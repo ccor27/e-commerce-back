@@ -181,7 +181,7 @@ class SaleServiceImpTest {
        when(productSoldRepository.findById(1L)).thenReturn(Optional.ofNullable(productSold));
        when(saleDTOMapper.apply(any(Sale.class))).thenReturn(expectedSaleResponseDTO);
        //Act
-       SaleResponseDTO saleResponseDTO = saleServiceImp.removeProductSold(productSoldResponseDTO,1L);
+       SaleResponseDTO saleResponseDTO = saleServiceImp.removeProductSold(productSoldResponseDTO.id(),1L);
        //Assertion
         assertNotNull(saleResponseDTO);
         Assertions.assertThat(saleResponseDTO).isEqualTo(expectedSaleResponseDTO);
