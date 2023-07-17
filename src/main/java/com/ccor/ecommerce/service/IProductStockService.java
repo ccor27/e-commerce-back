@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface IProductStockService {
     ProductStockResponseDTO save(ProductStockRequestDTO productStockRequestDTO);
-
     boolean remove(Long id);
     ProductStockResponseDTO edit(ProductStockRequestDTO productStockRequestDTO, Long id);
     List<ProductStockResponseDTO> findProductStocksByEnableProduct();

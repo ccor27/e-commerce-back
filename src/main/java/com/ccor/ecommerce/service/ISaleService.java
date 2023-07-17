@@ -13,6 +13,6 @@ public interface ISaleService {
     SaleResponseDTO findById(Long id);
     List<SaleResponseDTO> findAll();
     SaleResponseDTO addProductSold(ProductSoldRequestDTO productSoldRequestDTO, Long id);
-    SaleResponseDTO removeProductSold(ProductSoldResponseDTO productSoldResponseDTO, Long id);
+    SaleResponseDTO removeProductSold(Long id_product, Long id_sale);
     List<ProductSoldResponseDTO> findProductsSold(Long id);
 }

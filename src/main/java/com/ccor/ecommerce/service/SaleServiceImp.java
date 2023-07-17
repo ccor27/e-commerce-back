@@ -125,9 +125,9 @@ public class SaleServiceImp implements ISaleService{
 
     @Override
     @Transactional
-    public SaleResponseDTO removeProductSold(ProductSoldResponseDTO productSoldResponseDTO, Long id) {
-        Sale sale = saleRepository.findById(id).orElse(null);
-        ProductSold productSold = productSoldRepository.findById(productSoldResponseDTO.id()).orElse(null);
+    public SaleResponseDTO removeProductSold(Long id_product, Long id_sale) {
+        Sale sale = saleRepository.findById(id_sale).orElse(null);
+        ProductSold productSold = productSoldRepository.findById(id_product).orElse(null);
         if(sale!=null && productSold!=null){
             sale.getProductsSold().remove(productSold);
             return saleDTOMapper.apply(saleRepository.save(sale));
