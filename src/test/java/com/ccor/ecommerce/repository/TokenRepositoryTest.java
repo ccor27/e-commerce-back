@@ -43,13 +43,13 @@ class TokenRepositoryTest extends Person {
                 new ArrayList<Token>(),
                 new ArrayList<ConfirmationToken>(),
                 true,
+                "peter",
+                "peter123",
                 Arrays.asList(Role.CUSTOMER));
         customer.setName("peter");
         customer.setLastName("bing");
         customer.setCellphone("89262293");
         customer.setEmail("peter@gmail.com");
-        customer.setUsername("peter");
-        customer.setPwd("peter123");
         customer = customerRepository.save(customer);
 
         Token token1 = new Token(null,"HDHJSGWUE-28746734-jsduf", TokenType.BEARER,customer,false,false);

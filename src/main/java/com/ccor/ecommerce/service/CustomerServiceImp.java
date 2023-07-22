@@ -2,16 +2,15 @@ package com.ccor.ecommerce.service;
 
 import com.ccor.ecommerce.model.*;
 import com.ccor.ecommerce.model.dto.*;
-import com.ccor.ecommerce.repository.AddressRepository;
-import com.ccor.ecommerce.repository.CreditCardRepository;
-import com.ccor.ecommerce.repository.CustomerRepository;
-import com.ccor.ecommerce.repository.HistoryRepository;
+import com.ccor.ecommerce.repository.*;
 import com.ccor.ecommerce.service.mapper.AddressDTOMapper;
 import com.ccor.ecommerce.service.mapper.CreditCardDTOMapper;
 import com.ccor.ecommerce.service.mapper.CustomerDTOMapper;
 import com.ccor.ecommerce.service.mapper.HistoryDTOMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -23,6 +22,12 @@ public class CustomerServiceImp implements ICustomerService{
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired
+    private AddressRepository addressRepository;
+    @Autowired
+    private CreditCardRepository creditCardRepository;
+    @Autowired
+    private TokenRepository tokenRepository;
+    @Autowired
     private CustomerDTOMapper customerDTOMapper;
     @Autowired
     private HistoryDTOMapper historyDTOMapper;
@@ -31,12 +36,12 @@ public class CustomerServiceImp implements ICustomerService{
     @Autowired
     private CreditCardDTOMapper creditCardDTOMapper;
     @Autowired
-    private AddressRepository addressRepository;
+    private AuthenticationManager authenticationManager;
     @Autowired
-    private CreditCardRepository creditCardRepository;
+    private JwtService jwtService;
 
     @Override
-    public CustomerResponseDTO save(CustomerRequestDTO requestDTO) {
+    public AuthenticationResponseDTO save(CustomerRequestDTO requestDTO) {
         if(requestDTO!=null){
             Customer customer = Customer.builder()
                     .address(new ArrayList<>())
@@ -53,11 +58,62 @@ public class CustomerServiceImp implements ICustomerService{
             customer.setEmail(requestDTO.email());
             customer.setUsername(requestDTO.username());
             customer.setPwd(requestDTO.pwd());
-            //TODO: send the confirmation and encrypt the pwd
-            return customerDTOMapper.apply(customerRepository.save(customer));
+            //TODO: send the confirmation and encrypt the password
+            String jwtToken = jwtService.generateToken(customer);
+            saveCustomerToken(customer,jwtToken);
+            return new AuthenticationResponseDTO(jwtToken);
         }else{
             return null;
         }
+    }
+    private void saveCustomerToken (Customer customer, String jwtToken){
+        Token token = new Token(
+                null,
+                jwtToken,
+                TokenType.BEARER,
+                customer,
+                false,
+                false
+        );
+        tokenRepository.save(token);
+    }
+
+    @Override
+    public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO authenticationRequestDTO) {
+        String username =authenticationRequestDTO.username();
+        String pwd = authenticationRequestDTO.password();
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        username,pwd
+                )
+        );
+        Customer customer = customerRepository.findCustomerByUsername(username).orElse(null);
+        System.out.println("customerAuthentication "+customer.toString());
+        String jwtToken = jwtService.generateToken(customer);
+        revokeAllCustomerTokens(customer);
+        saveCustomerToken(customer,jwtToken);
+        return new AuthenticationResponseDTO(jwtToken);
+    }
+
+    @Override
+    public Long getCustomerIdByToken(String token) {
+        Long id = tokenRepository.getIdCustomerByToken(token);
+        if(id!=null){
+            return id;
+        }else {
+            return null;
+        }
+    }
+
+    private void revokeAllCustomerTokens(Customer customer){
+        List<Token> validCustomerTokens = tokenRepository.findAllValidTokenByCustomer(customer.getId());
+        if(validCustomerTokens.isEmpty())
+            return;
+        validCustomerTokens.forEach(t->{
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+        tokenRepository.saveAll(validCustomerTokens);
     }
 
     @Override

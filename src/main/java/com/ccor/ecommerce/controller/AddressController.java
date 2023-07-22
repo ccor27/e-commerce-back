@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.controller;
 
+import com.ccor.ecommerce.model.Role;
 import com.ccor.ecommerce.model.dto.AddressRequestDTO;
 import com.ccor.ecommerce.model.dto.AddressResponseDTO;
 import com.ccor.ecommerce.service.IAddressService;
@@ -7,11 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/address")
+@RequestMapping("/api/v1/address")
 @RestController
 public class AddressController {
     @Autowired

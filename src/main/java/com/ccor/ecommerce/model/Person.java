@@ -17,6 +17,4 @@ public abstract class Person{
     private String lastName;
     private String cellphone;
     private String email;
-    private String username;
-    private String pwd;
 }

@@ -2,9 +2,15 @@ package com.ccor.ecommerce.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.management.ConstructorParameters;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -12,14 +18,14 @@ import java.util.List;
 @Setter
 @ToString
 @Entity
-public class Customer extends Person{
+public class Customer extends Person implements UserDetails {
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "history_id")
     private History history;
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private List<Address> address;
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "card_id")
     private List<CreditCard> cards;
     @OneToMany(mappedBy = "customer",cascade = CascadeType.PERSIST)
@@ -27,6 +33,8 @@ public class Customer extends Person{
     @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     private List<ConfirmationToken> confirmationTokens;
     private boolean enableUser;
+    private String username;
+    private String pwd;
     /**
      * @ElementCollection to indicate that 'roles'
      * is a collection of elements, the 'targetClass' attribute specifies the type
@@ -44,4 +52,36 @@ public class Customer extends Person{
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private List<Role> roles;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream().map(role -> {
+            return new SimpleGrantedAuthority(role.toString());
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getPassword() {
+        return pwd;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enableUser;
+    }
 }

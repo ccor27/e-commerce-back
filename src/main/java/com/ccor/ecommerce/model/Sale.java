@@ -18,7 +18,7 @@ public class Sale {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String concept;
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<ProductSold> productsSold;
     @Temporal(TemporalType.DATE)
     private Date createAt;

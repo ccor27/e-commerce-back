@@ -11,19 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/api/v1/customer")
 public class CustomerController {
     @Autowired
     private ICustomerService iCustomerService;
-    @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody CustomerRequestDTO requestDTO){
-        CustomerResponseDTO customerResponseDTO = iCustomerService.save(requestDTO);
-        if(customerResponseDTO!=null){
-            return new ResponseEntity<>(customerResponseDTO, HttpStatus.CREATED);
-        }else{
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+
     @DeleteMapping("/{id}/remove")
     public ResponseEntity<?> remove(@Param("id") Long id){
         if(iCustomerService.remove(id)){
@@ -95,7 +87,7 @@ public class CustomerController {
         }
     }
     @PostMapping("/{id}/change/pwd/{pwd}")
-    public ResponseEntity<?> changePwd(@Param("id")Long id, @Param("pwd") String pwd){
+    public ResponseEntity<?> changePwd(@Param("id")Long id, @Param("password") String pwd){
         CustomerResponseDTO customerResponseDTO = iCustomerService.changePwd(pwd,id);
         if(customerResponseDTO!=null){
             return new ResponseEntity<>(customerResponseDTO,HttpStatus.OK);

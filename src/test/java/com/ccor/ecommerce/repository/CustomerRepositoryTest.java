@@ -42,13 +42,14 @@ class CustomerRepositoryTest {
                 new ArrayList<Token>(),
                 new ArrayList<ConfirmationToken>(),
                 true,
-                Arrays.asList(Role.CUSTOMER));
+                "peter",
+                "peter123",
+                Arrays.asList(Role.CUSTOMER)
+                );
         customer.setName("peter");
         customer.setLastName("bing");
         customer.setCellphone("89262293");
         customer.setEmail("peter@gmail.com");
-        customer.setUsername("peter");
-        customer.setPwd("peter123");
         customerRepository.save(customer);
  }
 
