@@ -11,19 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/api/v1/customer")
 public class CustomerController {
     @Autowired
     private ICustomerService iCustomerService;
-    @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody CustomerRequestDTO requestDTO){
-        CustomerResponseDTO customerResponseDTO = iCustomerService.save(requestDTO);
-        if(customerResponseDTO!=null){
-            return new ResponseEntity<>(customerResponseDTO, HttpStatus.CREATED);
-        }else{
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+
     @DeleteMapping("/{id}/remove")
     public ResponseEntity<?> remove(@Param("id") Long id){
         if(iCustomerService.remove(id)){
@@ -58,7 +50,7 @@ public class CustomerController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @GetMapping("/find/history")
+    @GetMapping("/find/{id}/history")
     public ResponseEntity<?> findHistory(@Param("id")Long id){
         HistoryResponseDTO historyResponseDTO = iCustomerService.findHistory(id);
         if(historyResponseDTO!=null){
@@ -95,7 +87,7 @@ public class CustomerController {
         }
     }
     @PostMapping("/{id}/change/pwd/{pwd}")
-    public ResponseEntity<?> changePwd(@Param("id")Long id, @Param("pwd") String pwd){
+    public ResponseEntity<?> changePwd(@Param("id")Long id, @Param("password") String pwd){
         CustomerResponseDTO customerResponseDTO = iCustomerService.changePwd(pwd,id);
         if(customerResponseDTO!=null){
             return new ResponseEntity<>(customerResponseDTO,HttpStatus.OK);
@@ -131,10 +123,19 @@ public class CustomerController {
         }
     }
     //TODO:test this method and search information about @Param
-    @DeleteMapping("/{id_customer}/remove/card/{id_card}")
+        @DeleteMapping("/{id_customer}/remove/card/{id_card}")
      public ResponseEntity<?> removeCard(@Param("id") Long id_customer,@Param("id")Long id_card){
         if(iCustomerService.removeCreditCard(id_card,id_customer)){
             return new ResponseEntity<>(HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/find/by/tk/{token}")
+    public ResponseEntity<?> findCustomerByToken(@Param("token")String token){
+        CustomerResponseDTO responseDTO = iCustomerService.getCustomerByToken(token);
+        if(responseDTO!=null){
+            return new ResponseEntity<>(responseDTO,HttpStatus.FOUND);
         }else{
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

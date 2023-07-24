@@ -5,7 +5,6 @@ import com.ccor.ecommerce.model.dto.ProductStockResponseDTO;
 import com.ccor.ecommerce.service.IProductStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/productStock")
+@RequestMapping("/api/v1/productStock")
 public class ProductStockController {
     @Autowired
     private IProductStockService iProductStockService;
@@ -43,6 +42,24 @@ public class ProductStockController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    @GetMapping("/find")
+    public ResponseEntity<?> findAll(){
+        List<ProductStockResponseDTO> list = iProductStockService.findAll();
+        if(list!=null){
+            return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/find/{id}")
+    public ResponseEntity<?> findById(@Param("id") Long id){
+        ProductStockResponseDTO productStockResponseDTO = iProductStockService.findProductById(id);
+        if(productStockResponseDTO!=null){
+            return new ResponseEntity<>(productStockResponseDTO,HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
     @GetMapping("/find/enable")
     public ResponseEntity<?> findProductsStockByEnableProduct(){
         List<ProductStockResponseDTO> list = iProductStockService.findProductStocksByEnableProduct();
@@ -61,7 +78,7 @@ public class ProductStockController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @PostMapping("/{id}/sell/{amount")
+    @PostMapping("/{id}/sell/{amount}")
     public ResponseEntity<?> sellProduct(@Param("id")Long id,@Param("amount") int amount){
         ProductStockResponseDTO productStockResponseDTO = iProductStockService.sellProduct(amount,id);
         if(productStockResponseDTO!=null){

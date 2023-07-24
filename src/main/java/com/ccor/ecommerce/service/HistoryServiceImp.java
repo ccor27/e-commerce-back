@@ -93,6 +93,7 @@ public class HistoryServiceImp implements IHistoryService{
         Sale sale = saleRepository.findById(saleResponseDTO.id()).orElse(null);
         if(history!=null && sale!=null){
             history.getSales().add(sale);
+            history.setModificationDate(new Date());
             History historyEdited = historyRepository.save(history);
             return historyEdited.getSales().stream().map(s -> {
                 return saleDTOMapper.apply(s);
@@ -110,6 +111,7 @@ public class HistoryServiceImp implements IHistoryService{
         Sale sale = saleRepository.findById(id_sale).orElse(null);
         if(history!=null && sale!=null){
             history.getSales().remove(sale);
+            history.setModificationDate(new Date());
             historyRepository.save(history);
             return true;
         }else{

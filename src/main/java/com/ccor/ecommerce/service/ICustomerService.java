@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface ICustomerService {
 
-    CustomerResponseDTO save(CustomerRequestDTO requestDTO);
+    AuthenticationResponseDTO save(CustomerRequestDTO requestDTO);
+    AuthenticationResponseDTO authenticate(AuthenticationRequestDTO authenticationRequestDTO);
+    CustomerResponseDTO getCustomerByToken(String token);
     boolean remove(Long id);
     CustomerResponseDTO editData(CustomerRequestEditDTO responseDTO, Long id);
     CustomerResponseDTO findById(Long id);

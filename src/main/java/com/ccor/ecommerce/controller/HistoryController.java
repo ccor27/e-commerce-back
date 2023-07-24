@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/history")
+@RequestMapping("/api/v1/history")
 public class HistoryController {
     @Autowired
     private IHistoryService iHistoryService;

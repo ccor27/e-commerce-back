@@ -59,6 +59,28 @@ public class ProductStockServiceImp implements IProductStockService{
     }
 
     @Override
+    public List<ProductStockResponseDTO> findAll() {
+        List<ProductStock> list = productStockRepository.findAll();
+        if(list!=null){
+            return list.stream().map(productStock -> {
+                return productStockDTOMapper.apply(productStock);
+            }).collect(Collectors.toList());
+        }else{
+            return null;
+        }
+    }
+
+    @Override
+    public ProductStockResponseDTO findProductById(Long id) {
+        ProductStock productStock = productStockRepository.findById(id).orElse(null);
+        if(productStock!=null){
+            return productStockDTOMapper.apply(productStock);
+        }else{
+            return null;
+        }
+    }
+
+    @Override
     public List<ProductStockResponseDTO> findProductStocksByEnableProduct() {
         List<ProductStock> list =productStockRepository.findProductStocksByEnableProduct();
         if(list!=null && !list.isEmpty()){

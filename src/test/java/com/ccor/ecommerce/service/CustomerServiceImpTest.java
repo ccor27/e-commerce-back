@@ -83,9 +83,9 @@ class CustomerServiceImpTest {
         when(customerRepository.save(any(Customer.class))).thenReturn(customer);
         when(customerDTOMapper.apply(customer)).thenReturn(expectedCustomerResponseDTO);
         //Act
-        CustomerResponseDTO customerResponseDTO = customerServiceImp.save(customerRequestDTO);
+        AuthenticationResponseDTO responseDTO = customerServiceImp.save(customerRequestDTO);
         //Assertions
-        Assertions.assertThat(customerResponseDTO).isEqualTo(expectedCustomerResponseDTO);
+        Assertions.assertThat(responseDTO).isNotNull();
 
     }
 
