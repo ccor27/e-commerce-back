@@ -40,7 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String username;
         if(authHeader==null||!authHeader.startsWith("Bearer ")){
             filterChain.doFilter(request,response);
-            System.out.println("not allowed");
             return;
         }
         jwt=authHeader.substring(7);

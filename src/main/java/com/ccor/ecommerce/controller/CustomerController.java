@@ -50,7 +50,7 @@ public class CustomerController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    @GetMapping("/find/history")
+    @GetMapping("/find/{id}/history")
     public ResponseEntity<?> findHistory(@Param("id")Long id){
         HistoryResponseDTO historyResponseDTO = iCustomerService.findHistory(id);
         if(historyResponseDTO!=null){
@@ -123,10 +123,19 @@ public class CustomerController {
         }
     }
     //TODO:test this method and search information about @Param
-    @DeleteMapping("/{id_customer}/remove/card/{id_card}")
+        @DeleteMapping("/{id_customer}/remove/card/{id_card}")
      public ResponseEntity<?> removeCard(@Param("id") Long id_customer,@Param("id")Long id_card){
         if(iCustomerService.removeCreditCard(id_card,id_customer)){
             return new ResponseEntity<>(HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/find/by/tk/{token}")
+    public ResponseEntity<?> findCustomerByToken(@Param("token")String token){
+        CustomerResponseDTO responseDTO = iCustomerService.getCustomerByToken(token);
+        if(responseDTO!=null){
+            return new ResponseEntity<>(responseDTO,HttpStatus.FOUND);
         }else{
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

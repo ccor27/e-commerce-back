@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface TokenRepository extends JpaRepository<Token,Long> {
     @Query("SELECT t FROM Token t inner join Customer c on t.customer.id= c.id WHERE c.id= :customerId and (t.expired=false or t.revoked=false)")
     List<Token> findAllValidTokenByCustomer(@Param("customerId")Long id);
-    @Query("SELECT t.customer.id FROM Token t WHERE t.token= :token ")
-    Long getIdCustomerByToken(@Param("token")String token);
+    @Query("SELECT t.customer FROM Token t WHERE t.token= :token ")
+    Customer getCustomerByToken(@Param("token")String token);
     Optional<Token> findTokenByToken(String token);
 }

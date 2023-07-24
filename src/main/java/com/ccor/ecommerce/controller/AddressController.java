@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RequestMapping("/api/v1/address")
 @RestController
+
 public class AddressController {
     @Autowired
     private IAddressService iAddressService;
@@ -56,6 +58,7 @@ public class AddressController {
     @GetMapping("/find/all")
     public ResponseEntity<?> findAll(){
         List<AddressResponseDTO> list = iAddressService.findAll();
+        System.out.println("entro a findAll de address");
         if(list!=null){
             return new ResponseEntity<>(list, HttpStatus.CREATED);
         }else{

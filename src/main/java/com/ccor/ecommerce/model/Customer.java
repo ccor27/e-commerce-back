@@ -23,10 +23,10 @@ public class Customer extends Person implements UserDetails {
     @JoinColumn(name = "history_id")
     private History history;
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id")
+    @JoinColumn(name = "customer_id")
     private List<Address> address;
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "card_id")
+    @JoinColumn(name = "customer_id")
     private List<CreditCard> cards;
     @OneToMany(mappedBy = "customer",cascade = CascadeType.PERSIST)
     private List<Token> tokens;
@@ -45,7 +45,7 @@ public class Customer extends Person implements UserDetails {
      * @Enumerated(EnumType.String) annotation indicates that the enum values should be stored
      * as string in the database
      */
-    @ElementCollection(targetClass = Role.class)
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(
             name = "customer_roles",
             joinColumns = @JoinColumn(name = "customer_id"))
@@ -56,7 +56,7 @@ public class Customer extends Person implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream().map(role -> {
-            return new SimpleGrantedAuthority(role.toString());
+            return new SimpleGrantedAuthority(String.valueOf(role));
         }).collect(Collectors.toList());
     }
 

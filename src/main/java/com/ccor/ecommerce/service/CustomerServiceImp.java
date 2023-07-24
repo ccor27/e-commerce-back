@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -39,6 +40,8 @@ public class CustomerServiceImp implements ICustomerService{
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public AuthenticationResponseDTO save(CustomerRequestDTO requestDTO) {
@@ -57,7 +60,7 @@ public class CustomerServiceImp implements ICustomerService{
             customer.setCellphone(requestDTO.cellphone());
             customer.setEmail(requestDTO.email());
             customer.setUsername(requestDTO.username());
-            customer.setPwd(requestDTO.pwd());
+            customer.setPwd(passwordEncoder.encode(requestDTO.pwd()));
             //TODO: send the confirmation and encrypt the password
             String jwtToken = jwtService.generateToken(customer);
             saveCustomerToken(customer,jwtToken);
@@ -88,7 +91,7 @@ public class CustomerServiceImp implements ICustomerService{
                 )
         );
         Customer customer = customerRepository.findCustomerByUsername(username).orElse(null);
-        System.out.println("customerAuthentication "+customer.toString());
+        System.out.println("Roles customer authenticate "+customer.getRoles());
         String jwtToken = jwtService.generateToken(customer);
         revokeAllCustomerTokens(customer);
         saveCustomerToken(customer,jwtToken);
@@ -96,10 +99,10 @@ public class CustomerServiceImp implements ICustomerService{
     }
 
     @Override
-    public Long getCustomerIdByToken(String token) {
-        Long id = tokenRepository.getIdCustomerByToken(token);
-        if(id!=null){
-            return id;
+    public CustomerResponseDTO getCustomerByToken(String token) {
+        Customer customer = tokenRepository.getCustomerByToken(token);
+        if(customer!=null){
+            return customerDTOMapper.apply(customer);
         }else {
             return null;
         }

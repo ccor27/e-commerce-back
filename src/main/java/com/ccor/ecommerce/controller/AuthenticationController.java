@@ -30,7 +30,6 @@ public class AuthenticationController {
         }
     }
    @PostMapping("/authenticate")
-   //@PreAuthorize("hasRole(ROLE.CUSTOMER) && hasRole(ROLE.CUSTOMER)")
     public ResponseEntity<?> authenticate(@RequestBody AuthenticationRequestDTO authenticationRequestDTO){
             AuthenticationResponseDTO responseDTO = iCustomerService.authenticate(authenticationRequestDTO);
             if(responseDTO!=null){
