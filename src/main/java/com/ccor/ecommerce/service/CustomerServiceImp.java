@@ -62,6 +62,7 @@ public class CustomerServiceImp implements ICustomerService{
             customer.setUsername(requestDTO.username());
             customer.setPwd(passwordEncoder.encode(requestDTO.pwd()));
             //TODO: send the confirmation and encrypt the password
+            customerRepository.save(customer);
             String jwtToken = jwtService.generateToken(customer);
             saveCustomerToken(customer,jwtToken);
             return new AuthenticationResponseDTO(jwtToken);
@@ -118,12 +119,13 @@ public class CustomerServiceImp implements ICustomerService{
         });
         tokenRepository.saveAll(validCustomerTokens);
     }
-
+    //TODO: search more information about remove customers when they are associated with sales
     @Override
-    public boolean remove(Long id) {
-        Optional<Customer> customerOptional = customerRepository.findById(id);
-        if (customerOptional.isPresent()) {
-            Customer customer = customerOptional.get();
+    public boolean removeCustomer(Long id) {
+        Customer customer = customerRepository.findById(id).orElse(null);
+        if (customer!=null) {
+            customer.getTokens().forEach(token -> token.setCustomer(null));
+            customer.getConfirmationTokens().forEach(confirmationToken -> confirmationToken.setCustomer(null));
             customer.setHistory(null);
             customerRepository.delete(customer);
             return true;
@@ -219,7 +221,9 @@ public class CustomerServiceImp implements ICustomerService{
         //TODO: I don't know very well if this is correct
         Customer customer = customerRepository.findById(id).orElse(null);
         if(customer!=null){
-            customer.setPwd(pwd);
+            System.out.println("old pwd: "+customer.getPwd());
+            customer.setPwd(passwordEncoder.encode(pwd));
+            System.out.println("new pwd: "+customer.getPwd());
             return customerDTOMapper.apply(customerRepository.save(customer));
         }else{
             return null;

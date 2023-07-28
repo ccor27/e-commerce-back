@@ -5,7 +5,6 @@ import com.ccor.ecommerce.model.dto.HistoryResponseDTO;
 import com.ccor.ecommerce.model.dto.SaleResponseDTO;
 import com.ccor.ecommerce.service.IHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,7 @@ public class HistoryController {
         }
     }
     @DeleteMapping("/{id}/remove")
-    public ResponseEntity<?> remove(@Param("id")Long id){
+    public ResponseEntity<?> remove(@PathVariable("id")Long id){
         if(iHistoryService.remove(id)){
             return new ResponseEntity<>(HttpStatus.OK);
         }else{
@@ -35,7 +34,7 @@ public class HistoryController {
         }
     }
     @GetMapping("/find/{id}")
-    public ResponseEntity<?> findById(@Param("id")Long id){
+    public ResponseEntity<?> findById(@PathVariable("id")Long id){
         HistoryResponseDTO historyResponseDTO = iHistoryService.findById(id);
         if(historyResponseDTO!=null){
             return new ResponseEntity<>(historyResponseDTO,HttpStatus.FOUND);
@@ -53,7 +52,7 @@ public class HistoryController {
         }
     }
     @GetMapping("/{id}/find/sales")
-    public ResponseEntity<?> findSales(@Param("id")Long id){
+    public ResponseEntity<?> findSales(@PathVariable("id")Long id){
         List<SaleResponseDTO> list = iHistoryService.findSales(id);
         if(list!=null){
             return new ResponseEntity<>(list,HttpStatus.FOUND);
@@ -62,7 +61,7 @@ public class HistoryController {
         }
     }
     @PostMapping("/{id}/add/sale")
-    public ResponseEntity<?> addSale(@RequestBody SaleResponseDTO saleResponseDTO, @Param("id")Long id){
+    public ResponseEntity<?> addSale(@RequestBody SaleResponseDTO saleResponseDTO, @PathVariable("id")Long id){
         List<SaleResponseDTO> list = iHistoryService.addSale(saleResponseDTO,id);
         if(list!=null){
             return new ResponseEntity<>(list,HttpStatus.OK);
@@ -71,8 +70,8 @@ public class HistoryController {
         }
     }
     //TODO: search about  @Param
-    @DeleteMapping("/{id_sale}/remove/sale/{id_history}")
-    public ResponseEntity<?> removeSale(@Param("id")Long id_sale,@Param("id")Long id_history){
+    @DeleteMapping("/{id_history}/remove/sale/{id_sale}")
+    public ResponseEntity<?> removeSale(@PathVariable("id_sale")Long id_sale,@PathVariable("id_history")Long id_history){
         if(iHistoryService.removeSale(id_sale,id_history)){
             return new ResponseEntity<>(HttpStatus.OK);
         }else{

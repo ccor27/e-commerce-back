@@ -137,7 +137,7 @@ class ProductStockServiceImpTest {
                 .enableProduct(true)
                 .build();
         ProductStockResponseDTO expectedProductStockResponseDTO = new ProductStockResponseDTO(1l,"product",10,10.0,"1as2",true);
-        when(productStockRepository.findProductStocksByBarCode("1as2")).thenReturn(Optional.ofNullable(productStock));
+        when(productStockRepository.findProductStockByBarCode("1as2")).thenReturn(Optional.ofNullable(productStock));
         when(productStockDTOMapper.apply(any(ProductStock.class))).thenReturn(expectedProductStockResponseDTO);
         //Act
         ProductStockResponseDTO productDTOS = productStockServiceImp.findProductStocksByBarCode("1as2");

@@ -77,7 +77,7 @@ public class HistoryServiceImp implements IHistoryService{
     @Override
     public List<SaleResponseDTO> findSales(Long id) {
         List<Sale> list = historyRepository.findHistorySales(id);
-        if(list!=null && !list.isEmpty()){
+        if(list!=null ){
             return list.stream().map(sale -> {
                 return saleDTOMapper.apply(sale);
             }).collect(Collectors.toList());

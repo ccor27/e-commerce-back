@@ -64,20 +64,16 @@ public class SaleServiceImp implements ISaleService{
                 );
             }).collect(Collectors.toList());
         }else{
-            return null;
+            return new ArrayList<>();
         }
     }
+    //TODO: maybe this method will be refactor
     @Override
     public SaleResponseDTO edit(SaleRequestDTO saleRequestDTO, Long id) {
         Sale sale = saleRepository.findById(id).orElse(null);
         if(sale!=null && saleRequestDTO!=null){
-            if(saleRequestDTO.products()!=null){
-               sale.setConcept(saleRequestDTO.concept());
-               sale.setProductsSold(null);
-            }else{
                 sale.setConcept(saleRequestDTO.concept());
                 sale.setProductsSold(productsSold(saleRequestDTO.products()));
-            }
             return saleDTOMapper.apply(sale);
         }else{
           return null;

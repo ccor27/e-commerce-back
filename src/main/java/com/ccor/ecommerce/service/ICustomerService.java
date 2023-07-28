@@ -9,7 +9,7 @@ public interface ICustomerService {
     AuthenticationResponseDTO save(CustomerRequestDTO requestDTO);
     AuthenticationResponseDTO authenticate(AuthenticationRequestDTO authenticationRequestDTO);
     CustomerResponseDTO getCustomerByToken(String token);
-    boolean remove(Long id);
+    boolean removeCustomer(Long id);
     CustomerResponseDTO editData(CustomerRequestEditDTO responseDTO, Long id);
     CustomerResponseDTO findById(Long id);
     List<CustomerResponseDTO> findAll();

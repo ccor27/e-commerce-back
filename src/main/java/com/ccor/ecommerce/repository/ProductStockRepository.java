@@ -12,5 +12,5 @@ import java.util.Optional;
 public interface ProductStockRepository extends JpaRepository<ProductStock,Long> {
     @Query("SELECT p FROM ProductStock p WHERE p.enableProduct=true")
     List<ProductStock> findProductStocksByEnableProduct();
-    Optional<ProductStock> findProductStocksByBarCode(String barcode);
+    Optional<ProductStock> findProductStockByBarCode(String barcode);
 }

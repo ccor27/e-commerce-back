@@ -96,7 +96,7 @@ class CustomerServiceImpTest {
         Customer customer = new Customer();
         when(customerRepository.findById(id)).thenReturn(Optional.ofNullable(customer));
         // Act
-        boolean result = customerServiceImp.remove(id);
+        boolean result = customerServiceImp.removeCustomer(id);
 
         // Assertion
         Assertions.assertThat(result).isTrue();

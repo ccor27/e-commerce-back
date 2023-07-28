@@ -3,9 +3,7 @@ package com.ccor.ecommerce.controller;
 import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
 import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
 import com.ccor.ecommerce.service.IProductSoldService;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +25,7 @@ public class ProductSoldController {
         }
     }
     @PostMapping("/{id}/edit")
-    public ResponseEntity<?> edit(@RequestBody ProductSoldRequestDTO productSoldRequestDTO, @Param("id")Long id){
+    public ResponseEntity<?> edit(@RequestBody ProductSoldRequestDTO productSoldRequestDTO, @PathVariable("id")Long id){
         ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.edit(productSoldRequestDTO,id);
         if(productSoldResponseDTO!=null){
             return new ResponseEntity<>(productSoldResponseDTO, HttpStatus.OK);
@@ -36,7 +34,7 @@ public class ProductSoldController {
         }
     }
     @DeleteMapping("/{id}/remove")
-    public ResponseEntity<?> remove(@Param("id")Long id){
+    public ResponseEntity<?> remove(@PathVariable("id")Long id){
         if(iProductSoldService.remove(id)){
             return new ResponseEntity<>(HttpStatus.OK);
         }else{
@@ -44,7 +42,7 @@ public class ProductSoldController {
         }
     }
     @GetMapping("/find/{id}")
-    public ResponseEntity<?> findById(@Param("id")Long id){
+    public ResponseEntity<?> findById(@PathVariable("id")Long id){
         ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.findById(id);
         if(productSoldResponseDTO!=null){
             return new ResponseEntity<>(productSoldResponseDTO,HttpStatus.FOUND);
@@ -62,7 +60,7 @@ public class ProductSoldController {
         }
     }
     @GetMapping("/find/barCode/{barcode}")
-     public ResponseEntity<?> findProductsSoldByBarCode(@Param("barCode")String barCode){
+     public ResponseEntity<?> findProductsSoldByBarCode(@PathVariable("barcode")String barCode){
         List<ProductSoldResponseDTO> list = iProductSoldService.findProductsSoldByBarCode(barCode);
         if(list!=null){
             return new ResponseEntity<>(list,HttpStatus.FOUND);
