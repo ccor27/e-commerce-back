@@ -53,11 +53,14 @@ public class Customer extends Person implements UserDetails {
     @Enumerated(EnumType.STRING)
     private List<Role> roles;
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream().map(role -> {
-            return new SimpleGrantedAuthority(String.valueOf(role));
+
+        Collection<? extends GrantedAuthority> collect = roles.stream().map(role -> {
+            return new SimpleGrantedAuthority("ROLE_"+role.name());
         }).collect(Collectors.toList());
+        return collect;
     }
 
     @Override

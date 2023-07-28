@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         jwt=authHeader.substring(7);
         username=jwtService.extractUsername(jwt);
-        if(username!=null && SecurityContextHolder.getContext().getAuthentication()==null){//it's not in the context or it's not validated yet
+        if(username!=null && SecurityContextHolder.getContext().getAuthentication()==null){//it's not in the context , or it's not validated yet
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             boolean isTokenValid = tokenRepository.findTokenByToken(jwt)
                     .map(token -> !token.isExpired() && !token.isRevoked())

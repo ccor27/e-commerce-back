@@ -4,7 +4,6 @@ import com.ccor.ecommerce.model.dto.CreditCardRequestDTO;
 import com.ccor.ecommerce.model.dto.CreditCardResponseDTO;
 import com.ccor.ecommerce.service.ICreditCardService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +25,7 @@ public class CreditCardController {
         }
     }
     @PostMapping("/{id}/edit")
-    public ResponseEntity<?> edit(@RequestBody CreditCardRequestDTO requestDTO, @Param("id") Long id){
+    public ResponseEntity<?> edit(@RequestBody CreditCardRequestDTO requestDTO, @PathVariable("id") Long id){
         CreditCardResponseDTO responseDTO = iCreditCardService.edit(requestDTO,id);
         if(responseDTO!=null){
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
@@ -35,7 +34,7 @@ public class CreditCardController {
         }
     }
      @GetMapping("/find/{id}")
-    public ResponseEntity<?> findById(@Param("id") Long id){
+    public ResponseEntity<?> findById(@PathVariable("id") Long id){
         CreditCardResponseDTO responseDTO = iCreditCardService.findById(id);
          if(responseDTO!=null){
              return new ResponseEntity<>(responseDTO, HttpStatus.FOUND);
@@ -44,7 +43,7 @@ public class CreditCardController {
          }
      }
     @GetMapping("/find/number/{number}")
-    public ResponseEntity<?> findByNumber(@Param("number") String number){
+    public ResponseEntity<?> findByNumber(@PathVariable("number") String number){
         CreditCardResponseDTO responseDTO = iCreditCardService.findCardByNumber(number);
         if(responseDTO!=null){
             return new ResponseEntity<>(responseDTO, HttpStatus.FOUND);
@@ -62,7 +61,7 @@ public class CreditCardController {
         }
     }
     @GetMapping("/find/type/{type}")
-    public ResponseEntity<?> findByType(@Param("typeCard") String type){
+    public ResponseEntity<?> findByType(@PathVariable("type") String type){
         List<CreditCardResponseDTO> list = iCreditCardService.findCardsByType(type);
         if (list!=null){
             return new ResponseEntity<>(list,HttpStatus.FOUND);
@@ -71,7 +70,7 @@ public class CreditCardController {
         }
     }
     @DeleteMapping("/{id}/remove")
-    public ResponseEntity<?> remove(@Param("id") Long id){
+    public ResponseEntity<?> remove(@PathVariable("id") Long id){
         if(iCreditCardService.remove(id)){
             return new ResponseEntity<>(HttpStatus.OK);
         }else{

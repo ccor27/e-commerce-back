@@ -70,7 +70,7 @@ public class ProductSoldServiceImp implements IProductSoldService{
     @Override
     public List<ProductSoldResponseDTO> findAll() {
         List<ProductSold> list = productSoldRepository.findAll();
-        if(list!=null &&!list.isEmpty()){
+        if(list!=null){
           return list.stream().map(productSold -> {
               return productSoldDTOMapper.apply(productSold);
           }).collect(Collectors.toList());

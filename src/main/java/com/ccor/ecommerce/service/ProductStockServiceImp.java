@@ -94,7 +94,7 @@ public class ProductStockServiceImp implements IProductStockService{
 
     @Override
     public ProductStockResponseDTO findProductStocksByBarCode(String barCode) {
-        ProductStock productStock = productStockRepository.findProductStocksByBarCode(barCode).orElse(null);
+        ProductStock productStock = productStockRepository.findProductStockByBarCode(barCode).orElse(null);
         if(productStock!=null){
             return productStockDTOMapper.apply(productStock);
         }else{
