@@ -69,7 +69,7 @@ public class CustomerController {
         }
     }
     @GetMapping("/find/{id}/cards")
-    public ResponseEntity<?> fincCards(@PathVariable("id")Long id){
+    public ResponseEntity<?> findCards(@PathVariable("id")Long id){
         List<CreditCardResponseDTO> list = iCustomerService.findCards(id);
         if(list!=null){
             return new ResponseEntity<>(list,HttpStatus.FOUND);

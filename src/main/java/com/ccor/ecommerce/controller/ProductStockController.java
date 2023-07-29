@@ -45,8 +45,6 @@ public class ProductStockController {
     public ResponseEntity<?> findAll(){
         List<ProductStockResponseDTO> list = iProductStockService.findAll();
         if(list!=null){
-            System.out.println("entro exitosamente a todos los productos");
-            System.out.println(list);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

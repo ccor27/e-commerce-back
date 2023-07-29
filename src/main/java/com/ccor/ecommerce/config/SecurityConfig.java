@@ -44,13 +44,32 @@ public class SecurityConfig {
     private PasswordEncoder passwordEncoder;
 
     private static final String[] adminUrls =
-                        {"/api/v1/address/**",
-                         "/api/v1/customer/**",
-                         "/api/v1/card/**",
-                         "/api/v1/history/**",
-                         "/api/v1/productSold/**",
-                         "/api/v1/productStock/**",
-                         "/api/v1/sale/**"};
+                        {
+                                "/api/v1/customer/{id}/remove",
+                                "/api/v1/customer/find",
+                                "/api/v1/customer/find/email/{email}",
+                                "/api/v1/address/**",
+                                "/api/v1/card/**",
+                                "api/v1/history/{id}/remove",
+                                "api/v1/history/find/{id}",
+                                "api/v1/history/find",
+                                "api/v1/history/{id}/find/sales",
+                                "api/v1/history/{id}/add/sale",
+                                "api/v1/history/{id_history}/remove/sale/{id_sale}",
+                                "api/v1/productSold/**",
+                                "/api/v1/productStock/save",
+                                "/api/v1/productStock/{id}/remove",
+                                "/api/v1/productStock/{id}/edit",
+                                "/api/v1/productStock/find/barcode/{barCode}",
+                                "/api/v1/sale/{id}/edit",
+                                "/api/v1/sale/find/{id}",
+                                "/api/v1/sale/find",
+                                "/api/v1/sale/{id}/add/product",
+                                "/api/v1/sale/{id_sale}/remove/product/{id_product}",
+                                "/api/v1/sale/{id}/find/products"
+
+
+                        };
     private static final String[] customersUrls =
                         {"/api/v1/customer/find/{id}",
                          "/api/v1/customer/{id}/edit",
@@ -59,16 +78,19 @@ public class SecurityConfig {
                          "/api/v1/customer/{id}/add/card",
                          "/api/v1/customer/{id_customer}/remove/card/{id_card}",
                          "/api/v1/customer/find/{id}/history",
+                         "/api/v1/customer/find/{id}/address",
+                         "/api/v1/customer/find/{id}/cards",
                          "/api/v1/history/{id}/add/sale",
                          "/api/v1/sale/save",
                          "/api/v1/productStock/find",
                          "/api/v1/productStock/find/{id}",
+                         "/api/v1/productStock/find/enable",
+                         "/api/v1/productStock//{id}/sell/{amount}",
                          "/api/v1/customer/{id}/change/pwd/{pwd}",
                          "/api/v1/customer/find/by/tk/{token}"};
     private static final String[] openUrls=
                         {
-                                "/api/v1/authentication/save",
-                                "/api/v1/authentication/authenticate",
+                                "/api/v1/authentication/**",
                                 "/h2-console/**"
                          };
 
@@ -88,10 +110,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth->{
                     auth
-                            .requestMatchers( openUrls).permitAll()
-                          //.requestMatchers(adminUrls).hasAnyRole(ADMIN.name())
-                          //.requestMatchers(customersUrls).hasRole(CUSTOMER.name())
-                            .anyRequest().authenticated();
+                          .requestMatchers( openUrls).permitAll()
+                          .requestMatchers(adminUrls).hasRole(ADMIN.name())
+                          .requestMatchers(customersUrls).hasAnyRole(CUSTOMER.name(), ADMIN.name())
+                          .anyRequest().authenticated();
                 })
                 .sessionManagement(sess->sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
