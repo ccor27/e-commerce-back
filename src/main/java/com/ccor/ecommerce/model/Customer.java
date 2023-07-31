@@ -6,7 +6,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.management.ConstructorParameters;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ public class Customer extends Person implements UserDetails {
     private List<Token> tokens;
     @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     private List<ConfirmationToken> confirmationTokens;
-    private boolean enableUser;
+    private boolean enable;
     private String username;
     private String pwd;
     /**
@@ -85,6 +84,6 @@ public class Customer extends Person implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return enableUser;
+        return enable;
     }
 }

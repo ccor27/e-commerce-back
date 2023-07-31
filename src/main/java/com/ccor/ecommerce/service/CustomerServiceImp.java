@@ -7,6 +7,7 @@ import com.ccor.ecommerce.service.mapper.AddressDTOMapper;
 import com.ccor.ecommerce.service.mapper.CreditCardDTOMapper;
 import com.ccor.ecommerce.service.mapper.CustomerDTOMapper;
 import com.ccor.ecommerce.service.mapper.HistoryDTOMapper;
+import com.ccor.ecommerce.service.registration.ConfirmationTokenServiceImp;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,35 +42,12 @@ public class CustomerServiceImp implements ICustomerService{
     @Autowired
     private JwtService jwtService;
     @Autowired
+    private ConfirmationTokenServiceImp confirmationTokenService;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Override
-    public AuthenticationResponseDTO save(CustomerRequestDTO requestDTO) {
-        if(requestDTO!=null){
-            Customer customer = Customer.builder()
-                    .address(new ArrayList<>())
-                    .cards(new ArrayList<>())
-                    .history(new History(null,new ArrayList<>(),new Date()))
-                    .roles(Arrays.asList(Role.CUSTOMER))
-                    .tokens(new ArrayList<>())
-                    .confirmationTokens(new ArrayList<>())
-                    .enableUser(false)
-                    .build();
-            customer.setName(requestDTO.name());
-            customer.setLastName(requestDTO.lastName());
-            customer.setCellphone(requestDTO.cellphone());
-            customer.setEmail(requestDTO.email());
-            customer.setUsername(requestDTO.username());
-            customer.setPwd(passwordEncoder.encode(requestDTO.pwd()));
-            //TODO: send the confirmation and encrypt the password
-            customerRepository.save(customer);
-            String jwtToken = jwtService.generateToken(customer);
-            saveCustomerToken(customer,jwtToken);
-            return new AuthenticationResponseDTO(jwtToken);
-        }else{
-            return null;
-        }
-    }
+
+
     private void saveCustomerToken (Customer customer, String jwtToken){
         Token token = new Token(
                 null,
@@ -98,7 +76,6 @@ public class CustomerServiceImp implements ICustomerService{
         saveCustomerToken(customer,jwtToken);
         return new AuthenticationResponseDTO(jwtToken);
     }
-
     @Override
     public CustomerResponseDTO getCustomerByToken(String token) {
         Customer customer = tokenRepository.getCustomerByToken(token);
