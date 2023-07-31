@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@Builder
 @Entity
 //TODO: I don't sure if is necessary make a DTO to this class.
 public class ConfirmationToken {
