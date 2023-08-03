@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -90,8 +91,7 @@ public class SecurityConfig {
                          "/api/v1/customer/find/by/tk/{token}"};
     private static final String[] openUrls=
                         {
-                                "/api/v1/authentication/**",
-                                "/h2-console/**"
+                                "/api/v1/authentication/**"
                          };
 
     /**
@@ -105,7 +105,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
 
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)// to get access from different url
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth->{
@@ -113,6 +113,7 @@ public class SecurityConfig {
                           .requestMatchers( openUrls).permitAll()
                           .requestMatchers(adminUrls).hasRole(ADMIN.name())
                           .requestMatchers(customersUrls).hasAnyRole(CUSTOMER.name(), ADMIN.name())
+                          .requestMatchers(PathRequest.toH2Console()).permitAll()
                           .anyRequest().authenticated();
                 })
                 .sessionManagement(sess->sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -124,6 +125,9 @@ public class SecurityConfig {
                             .logoutSuccessHandler(
                                     (request, response, authentication) ->
                                             SecurityContextHolder.clearContext());
+                })
+                .headers(httpSecurityHeadersConfigurer -> {
+                    httpSecurityHeadersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable);
                 });
 
         return http.build();
