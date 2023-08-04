@@ -13,10 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class RegistrationServiceImp implements IRegistrationService{
@@ -56,7 +53,7 @@ public class RegistrationServiceImp implements IRegistrationService{
                 customer.setUsername(requestDTO.username());
                 customer.setPwd(passwordEncoder.encode(requestDTO.pwd()));
                 customerRepository.save(customer);
-                String token = UUID.randomUUID().toString();
+                /*String token = UUID.randomUUID().toString();
                 ConfirmationToken confirmationToken = ConfirmationToken.builder()
                         .token(token)
                         .createdAt(LocalDateTime.now())
@@ -65,32 +62,61 @@ public class RegistrationServiceImp implements IRegistrationService{
                         .build();
                 confirmationTokenService.saveConfirmationToken(confirmationToken);
                 String link= "http://localhost:8080/api/v1/authentication/confirm?token="+token;
-                iEmailSender.send(customer.getEmail(),buildEmail(customer.getName(),link));
-                return new AuthenticationResponseDTO(token); //confirmation token
+                iEmailSender.send(customer.getEmail(),buildEmail(customer.getName(),link));*/
+                return new AuthenticationResponseDTO(resendConfirmationEmail(customer.getEmail())); //confirmation token
             }
 
         }else{
             return null;
         }
     }
+    public String resendConfirmationEmail(String email) {
+        Customer customer = customerRepository.findCustomerByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        ConfirmationToken token = generateToken(customer);
+
+        String link = "http://localhost:8080/api/v1/authentication/confirm?token=" + token.getToken();
+        iEmailSender.send(customer.getEmail(), buildEmail(customer.getName(), link));
+        return token.getToken();
+    }
+    public ConfirmationToken generateToken(Customer customer) {
+        String tokenValue = UUID.randomUUID().toString();
+        ConfirmationToken token = ConfirmationToken.builder()
+                .token(tokenValue)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .customer(customer)
+                .build();
+        confirmationTokenService.saveConfirmationToken(token);
+        return token;
+    }
+
     @Transactional
     @Override
     public String confirmToken(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService
-                .getToken(token).orElseThrow(
-                        ()-> new IllegalStateException("Token not fount"));
-        if(confirmationToken.getConfirmedAt()!=null){
-            throw new IllegalStateException("Email already confirmed");
+                .getToken(token).orElse(null);
+        if(confirmationToken!=null){
+            if(confirmationToken.getConfirmedAt()!=null){
+                return "Email already confirmed";
+            }else{
+                LocalDateTime expiredAt = confirmationToken.getExpiresAt();
+                if(expiredAt.isBefore(LocalDateTime.now())){//is expired
+                    resendConfirmationEmail(confirmationToken.getCustomer().getEmail());
+                    System.out.println("Token expired, send another one");
+                    return "the token was expired so we already send you another one";
+                }else{
+                    confirmationTokenService.setConfirmedAt(token);
+                    Customer customer = confirmationToken.getCustomer();
+                    customer.setEnable(true);
+                    customerRepository.save(customer);
+                    return "Email confirmed successfully";
+                }
+            }
+        }else{
+            return "Error confirmation token null";
         }
-        LocalDateTime expiredAt = confirmationToken.getExpiresAt();
-        if(expiredAt.isBefore(LocalDateTime.now())){
-            throw new IllegalStateException("Token expired");
-        }
-        confirmationTokenService.setConfirmedAt(token);
-        Customer customer = confirmationToken.getCustomer();
-        customer.setEnable(true);
-        customerRepository.save(customer);
-        return "Email confirmed successfully";
     }
 
 

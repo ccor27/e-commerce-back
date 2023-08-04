@@ -2,6 +2,7 @@ package com.ccor.ecommerce.service.registration;
 
 import com.ccor.ecommerce.model.ConfirmationToken;
 import com.ccor.ecommerce.repository.ConfirmationTokenRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +13,10 @@ import java.util.Optional;
 public class ConfirmationTokenServiceImp implements IConfirmationToken{
     @Autowired
     private ConfirmationTokenRepository confirmationTokenRepository;
+    @Transactional
     @Override
     public void saveConfirmationToken(ConfirmationToken token) {
-       confirmationTokenRepository.save(token);
+       ConfirmationToken c = confirmationTokenRepository.save(token);
     }
     public Optional<ConfirmationToken> getToken(String token){
         return confirmationTokenRepository.findByToken(token);
