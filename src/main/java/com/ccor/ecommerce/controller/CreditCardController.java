@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.controller;
 
+import com.ccor.ecommerce.exceptions.CreditCardException;
 import com.ccor.ecommerce.model.dto.CreditCardRequestDTO;
 import com.ccor.ecommerce.model.dto.CreditCardResponseDTO;
 import com.ccor.ecommerce.service.ICreditCardService;
@@ -17,65 +18,87 @@ public class CreditCardController {
     private ICreditCardService iCreditCardService;
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody CreditCardRequestDTO requestDTO){
-        CreditCardResponseDTO responseDTO = iCreditCardService.save(requestDTO);
-        if(responseDTO!=null){
+        try {
+            CreditCardResponseDTO responseDTO = iCreditCardService.save(requestDTO);
             return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
-        }else{
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (CreditCardException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
     @PostMapping("/{id}/edit")
     public ResponseEntity<?> edit(@RequestBody CreditCardRequestDTO requestDTO, @PathVariable("id") Long id){
-        CreditCardResponseDTO responseDTO = iCreditCardService.edit(requestDTO,id);
-        if(responseDTO!=null){
-            return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
-        }
+           try{
+               CreditCardResponseDTO responseDTO = iCreditCardService.edit(requestDTO,id);
+               return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+           }catch (CreditCardException ex){
+               return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_MODIFIED);
+           }
+
+
     }
      @GetMapping("/find/{id}")
     public ResponseEntity<?> findById(@PathVariable("id") Long id){
-        CreditCardResponseDTO responseDTO = iCreditCardService.findById(id);
-         if(responseDTO!=null){
-             return new ResponseEntity<>(responseDTO, HttpStatus.FOUND);
-         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-         }
+       try{
+           CreditCardResponseDTO responseDTO = iCreditCardService.findById(id);
+           return new ResponseEntity<>(responseDTO, HttpStatus.FOUND);
+       }catch (CreditCardException ex){
+           return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+       }
      }
     @GetMapping("/find/number/{number}")
     public ResponseEntity<?> findByNumber(@PathVariable("number") String number){
-        CreditCardResponseDTO responseDTO = iCreditCardService.findCardByNumber(number);
-        if(responseDTO!=null){
+        try {
+            CreditCardResponseDTO responseDTO = iCreditCardService.findCardByNumber(number);
             return new ResponseEntity<>(responseDTO, HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (CreditCardException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping("/find")
-    public ResponseEntity<?> findAll(){
-        List<CreditCardResponseDTO> list = iCreditCardService.findAll();
-        if (list!=null){
+    public ResponseEntity<?> findAllByDefault(@PathVariable Integer offset, @PathVariable Integer pageSize){
+        try {
+            List<CreditCardResponseDTO> list = iCreditCardService.findAll(offset, pageSize);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (CreditCardException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/find/{offset}/{pageSize}")
+    public ResponseEntity<?> findAll(@PathVariable Integer offset, @PathVariable Integer pageSize){
+        try {
+            List<CreditCardResponseDTO> list = iCreditCardService.findAll(offset, pageSize);
+            return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }catch (CreditCardException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/find/type/{type}/{offset}/{pageSize}")
+    public ResponseEntity<?> findByType(@PathVariable("type") String type,@PathVariable Integer offset,@PathVariable Integer pageSize){
+        try{
+            List<CreditCardResponseDTO> list = iCreditCardService.findCardsByType(offset, pageSize, type);
+            return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }catch (CreditCardException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping("/find/type/{type}")
-    public ResponseEntity<?> findByType(@PathVariable("type") String type){
-        List<CreditCardResponseDTO> list = iCreditCardService.findCardsByType(type);
-        if (list!=null){
+    public ResponseEntity<?> findByTypeByDefault(@PathVariable("type") String type){
+        try{
+            List<CreditCardResponseDTO> list = iCreditCardService.findCardsByType(0, 10, type);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (CreditCardException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @DeleteMapping("/{id}/remove")
     public ResponseEntity<?> remove(@PathVariable("id") Long id){
-        if(iCreditCardService.remove(id)){
+        try{
+            iCreditCardService.remove(id);
             return new ResponseEntity<>(HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (CreditCardException ex){
+            return  new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
+
     }
 
 }

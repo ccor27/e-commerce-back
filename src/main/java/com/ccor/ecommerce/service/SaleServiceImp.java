@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.SaleException;
 import com.ccor.ecommerce.model.ProductSold;
 import com.ccor.ecommerce.model.Sale;
 import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
@@ -12,6 +13,8 @@ import com.ccor.ecommerce.service.mapper.ProductSoldDTOMapper;
 import com.ccor.ecommerce.service.mapper.SaleDTOMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -48,7 +51,7 @@ public class SaleServiceImp implements ISaleService{
             }
             return saleDTOMapper.apply(saleRepository.save(sale));
         }else{
-         return null;
+         throw new SaleException("The request to save is null");
         }
     }
 
@@ -76,7 +79,7 @@ public class SaleServiceImp implements ISaleService{
                 sale.setProductsSold(productsSold(saleRequestDTO.products()));
             return saleDTOMapper.apply(sale);
         }else{
-          return null;
+          throw new SaleException("The sale fetched to update doesn't exist or the request is null");
         }
     }
 
@@ -85,19 +88,19 @@ public class SaleServiceImp implements ISaleService{
         if(saleRepository.existsById(id)){
             return saleDTOMapper.apply(saleRepository.findById(id).get());
         }else{
-            return null;
+            throw new SaleException("The sale fetched by id doesn't exist");
         }
     }
 
     @Override
-    public List<SaleResponseDTO> findAll() {
-        List<Sale> list = saleRepository.findAll();
-        if(list!=null && list.size()>0){
+    public List<SaleResponseDTO> findAll(Integer offset, Integer pageSize) {
+        Page<Sale> list = saleRepository.findAll(PageRequest.of(offset,pageSize));
+        if(list!=null){
           return list.stream().map(sale -> {
               return saleDTOMapper.apply(sale);
           }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new SaleException("The list of sales is null");
         }
     }
 
@@ -115,7 +118,7 @@ public class SaleServiceImp implements ISaleService{
             sale.getProductsSold().add(productSold);
             return saleDTOMapper.apply(saleRepository.save(sale));
         }else{
-            return null;
+            throw new SaleException("The sale fetched to add it a new product doesn't exist");
         }
     }
 
@@ -128,24 +131,23 @@ public class SaleServiceImp implements ISaleService{
             sale.getProductsSold().remove(productSold);
             return saleDTOMapper.apply(saleRepository.save(sale));
         }else{
-            return null;
+            throw new SaleException("The sale fetched or the product to delete doesn't exist");
         }
     }
-
+  //TODO: implement a pageable
     @Override
-    public List<ProductSoldResponseDTO> findProductsSold(Long id) {
+    public List<ProductSoldResponseDTO> findProductsSold(Long id, Integer offset,Integer pageSize) {
         if(saleRepository.existsById(id)){
-            List<ProductSold> list = saleRepository.findSaleProductsSold(id);
-            if(list!=null && !list.isEmpty()){
+            Page<ProductSold> list = saleRepository.findSaleProductsSold(id,PageRequest.of(offset,pageSize));
+            if(list!=null){
                 return list.stream().map(productSold -> {
                     return productSoldDTOMapper.apply(productSold);
                 }).collect(Collectors.toList());
             }else{
-                System.out.println("else de lilst");
-                return null;
+                throw new SaleException("The list of sale's product is null");
             }
         }else{
-            return null;
+            throw new SaleException("The sale fetched to find its product doesn't exist");
         }
     }
 }

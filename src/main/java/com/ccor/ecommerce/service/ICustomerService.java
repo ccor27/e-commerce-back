@@ -11,10 +11,10 @@ public interface ICustomerService {
     boolean removeCustomer(Long id);
     CustomerResponseDTO editData(CustomerRequestEditDTO responseDTO, Long id);
     CustomerResponseDTO findById(Long id);
-    List<CustomerResponseDTO> findAll();
+    List<CustomerResponseDTO> findAll(Integer offset, Integer pageSize);
     HistoryResponseDTO findHistory(Long id);
-    List<AddressResponseDTO> findAddress(Long id);
-    List<CreditCardResponseDTO> findCards(Long id);
+    List<AddressResponseDTO> findAddress(Long id,Integer offset, Integer pageSize);
+    List<CreditCardResponseDTO> findCards(Long id,Integer offset, Integer pageSize);
     CustomerResponseDTO findByEmail(String email);
     CustomerResponseDTO changePwd(String pwd, Long id);
     List<AddressResponseDTO> addAddress(AddressResponseDTO addressRequestDTO, Long id);

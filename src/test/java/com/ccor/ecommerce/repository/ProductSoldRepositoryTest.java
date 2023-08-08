@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -40,9 +42,9 @@ class ProductSoldRepositoryTest extends Person {
 
     @Test
     void findProductSoldsByBarCode() {
-        List<ProductSold> solds1 = productSoldRepository.findProductsSoldByBarCode("SDC26493801728");
+        Page<ProductSold> solds1 = productSoldRepository.findProductsSoldByBarCode("SDC26493801728", PageRequest.of(0,10));
         assertTrue(!solds1.isEmpty() || solds1!=null);
-        List<ProductSold> solds2 = productSoldRepository.findProductsSoldByBarCode("SDC2649380178");
+        Page<ProductSold> solds2 = productSoldRepository.findProductsSoldByBarCode("SDC2649380178",PageRequest.of(0,10));
         assertFalse(solds1.isEmpty() || solds1==null);
     }
 }

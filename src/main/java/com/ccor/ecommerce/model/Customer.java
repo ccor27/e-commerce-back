@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,6 +33,7 @@ public class Customer extends Person implements UserDetails {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     private List<ConfirmationToken> confirmationTokens;
     private boolean enable;
+    @Column(unique = true)
     private String username;
     private String pwd;
     /**

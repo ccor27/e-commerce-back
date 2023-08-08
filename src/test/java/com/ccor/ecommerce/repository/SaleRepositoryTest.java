@@ -6,6 +6,8 @@ import com.ccor.ecommerce.model.Sale;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -52,9 +54,9 @@ class SaleRepositoryTest extends Person {
 
     @Test
     void findSaleProductsSold() {
-        List<ProductSold> solds1 = saleRepository.findSaleProductsSold(1L);
-        assertEquals(solds1.size(),2);
-        List<ProductSold> solds2 = saleRepository.findSaleProductsSold(10L);
+        Page<ProductSold> solds1 = saleRepository.findSaleProductsSold(1L, PageRequest.of(0,10));
+        assertEquals(solds1.getTotalElements(),2);
+        Page<ProductSold> solds2 = saleRepository.findSaleProductsSold(10L,PageRequest.of(0,10));
         assertTrue(solds2.isEmpty() || solds2==null);
     }
 

@@ -83,7 +83,6 @@ public class SecurityConfig {
                          "/api/v1/customer/find/{id}/cards",
                          "/api/v1/history/{id}/add/sale",
                          "/api/v1/sale/save",
-                         "/api/v1/productStock/find",
                          "/api/v1/productStock/find/{id}",
                          "/api/v1/productStock/find/enable",
                          "/api/v1/productStock//{id}/sell/{amount}",
@@ -91,7 +90,9 @@ public class SecurityConfig {
                          "/api/v1/customer/find/by/tk/{token}"};
     private static final String[] openUrls=
                         {
-                                "/api/v1/authentication/**"
+                                "/api/v1/authentication/**",
+                                "/api/v1/productStock/find",
+                                "/api/v1/productStock/find/{offset}/{pageSize}"
                          };
 
     /**

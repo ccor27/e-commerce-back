@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.HistoryException;
 import com.ccor.ecommerce.model.History;
 import com.ccor.ecommerce.model.Sale;
 import com.ccor.ecommerce.model.dto.HistoryRequestDTO;
@@ -12,6 +13,8 @@ import com.ccor.ecommerce.service.mapper.HistoryDTOMapper;
 import com.ccor.ecommerce.service.mapper.SaleDTOMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,7 +41,7 @@ public class HistoryServiceImp implements IHistoryService{
                     .build();
             return historyDTOMapper.apply(historyRepository.save(history));
         }else{
-            return null;
+            throw new HistoryException("The request to save is null");
         }
     }
 
@@ -48,7 +51,7 @@ public class HistoryServiceImp implements IHistoryService{
          historyRepository.deleteById(id);
          return true;
      }else{
-         return false;
+         throw new HistoryException("The history fetched to delete doesn't exist");
      }
     }
 
@@ -58,34 +61,34 @@ public class HistoryServiceImp implements IHistoryService{
         if (history!=null){
             return historyDTOMapper.apply(history);
         }else{
-            return null;
+            throw new HistoryException("The history fetched by id doesn't exist");
         }
     }
 
     @Override
-    public List<HistoryResponseDTO> findAll() {
-        List<History> list = historyRepository.findAll();
-        if(list!=null && !list.isEmpty()){
+    public List<HistoryResponseDTO> findAll(Integer offset, Integer pageSize) {
+        Page<History> list = historyRepository.findAll(PageRequest.of(offset,pageSize));
+        if(list!=null){
             return list.stream().map(history -> {
                 return historyDTOMapper.apply(history);
             }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new HistoryException("The list of histories is null");
         }
     }
 
     @Override
-    public List<SaleResponseDTO> findSales(Long id) {
-        List<Sale> list = historyRepository.findHistorySales(id);
+    public List<SaleResponseDTO> findSales(Long id,Integer offset, Integer pageSize) {
+        Page<Sale> list = historyRepository.findHistorySales(id,PageRequest.of(offset,pageSize));
         if(list!=null ){
             return list.stream().map(sale -> {
                 return saleDTOMapper.apply(sale);
             }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new HistoryException("The list of history's sales is null");
         }
     }
-
+    //TODO: this method return a pageable with 10 elements in the 0 page
     @Override
     @Transactional
     public List<SaleResponseDTO> addSale(SaleResponseDTO saleResponseDTO, Long id) {
@@ -94,12 +97,13 @@ public class HistoryServiceImp implements IHistoryService{
         if(history!=null && sale!=null){
             history.getSales().add(sale);
             history.setModificationDate(new Date());
-            History historyEdited = historyRepository.save(history);
-            return historyEdited.getSales().stream().map(s -> {
+            historyRepository.save(history);
+            Page<Sale> list = historyRepository.findHistorySales(history.getId(), PageRequest.of(0,10));
+            return list.stream().map(s -> {
                 return saleDTOMapper.apply(s);
             }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new HistoryException("The history fetched or the sale to add doesn't exist");
         }
 
     }
@@ -115,7 +119,7 @@ public class HistoryServiceImp implements IHistoryService{
             historyRepository.save(history);
             return true;
         }else{
-            return false;
+            throw new HistoryException("The history fetched or the sale fetched doesn't exist");
         }
     }
 }

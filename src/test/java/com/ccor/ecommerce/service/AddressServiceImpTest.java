@@ -14,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 
@@ -136,7 +138,7 @@ class AddressServiceImpTest {
                 .thenReturn(addressResponseDTO1)
                 .thenReturn(addressResponseDTO2);
 
-        List<AddressResponseDTO> expectedList = addressServiceImp.findAll();
+        List<AddressResponseDTO> expectedList = addressServiceImp.findAll(0,10);
         //Assert
         //verify the behavior
         assertNotNull(expectedList);
@@ -151,7 +153,7 @@ class AddressServiceImpTest {
         //Arrange
         when(addressRepository.findAll()).thenReturn(Collections.emptyList());
         //Act
-        List<AddressResponseDTO> expectedList = addressServiceImp.findAll();
+        List<AddressResponseDTO> expectedList = addressServiceImp.findAll(0,10);
         //Assert
         assertNull(expectedList);
         verify(addressRepository,times(1)).findAll();
@@ -164,16 +166,16 @@ class AddressServiceImpTest {
         Address address1 = Address.builder().id(1L).street("street1").country("country1").postalCode("28903").build();
         Address address2 = Address.builder().id(2L).street("street2").country("country2").postalCode("28903").build();
         List<Address> addresses = Arrays.asList(address1, address2);
-        when(addressRepository.findAddressesByPostalCode("28903")).thenReturn(addresses);
+        when(addressRepository.findAddressesByPostalCode(PageRequest.of(0,10),"28903")).thenReturn((Page<Address>) addresses);
         //Act
         AddressResponseDTO expectedResponseDTO1 = new AddressResponseDTO(1L,"street1","country1","28903");
         AddressResponseDTO expectedResponseDTO2 = new AddressResponseDTO(2L,"street2","country2","28903");
         when(addressDTOMapper.apply(any(Address.class)))
                 .thenReturn(expectedResponseDTO1)
                 .thenReturn(expectedResponseDTO2);
-        List<AddressResponseDTO> expectedList = addressServiceImp.findAddressesByPostalCode("28903");
+        List<AddressResponseDTO> expectedList = addressServiceImp.findAddressesByPostalCode(0,10,"28903");
         //Assert
-        verify(addressRepository,times(2)).findAddressesByPostalCode("28903");
+        verify(addressRepository,times(2)).findAddressesByPostalCode(PageRequest.of(0,10),"28903");
         verify(addressDTOMapper,times(2)).apply(any(Address.class));
 
 
@@ -185,16 +187,16 @@ class AddressServiceImpTest {
         Address address1 = Address.builder().id(1L).street("street1").country("country").postalCode("28903").build();
         Address address2 = Address.builder().id(2L).street("street2").country("country").postalCode("28903").build();
         List<Address> addresses = Arrays.asList(address1, address2);
-        when(addressRepository.findAddressesByCountry("country")).thenReturn(addresses);
+        when(addressRepository.findAddressesByCountry(PageRequest.of(0,10),"country")).thenReturn((Page<Address>) addresses);
         //Act
         AddressResponseDTO expectedResponseDTO1 = new AddressResponseDTO(1L,"street1","country","28903");
         AddressResponseDTO expectedResponseDTO2 = new AddressResponseDTO(2L,"street2","country","28903");
         when(addressDTOMapper.apply(any(Address.class)))
                 .thenReturn(expectedResponseDTO1)
                 .thenReturn(expectedResponseDTO2);
-        List<AddressResponseDTO> expectedList = addressServiceImp.findAddressesByCountry("country");
+        List<AddressResponseDTO> expectedList = addressServiceImp.findAddressesByCountry(0,10,"country");
         //Assert
-        verify(addressRepository,times(2)).findAddressesByCountry("country");
+        verify(addressRepository,times(2)).findAddressesByCountry(PageRequest.of(0,10),"country");
         verify(addressDTOMapper,times(2)).apply(any(Address.class));
 
     }

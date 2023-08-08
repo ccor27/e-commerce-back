@@ -1,11 +1,14 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.ProductSoldException;
 import com.ccor.ecommerce.model.ProductSold;
 import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
 import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
 import com.ccor.ecommerce.repository.ProductSoldRepository;
 import com.ccor.ecommerce.service.mapper.ProductSoldDTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +31,7 @@ public class ProductSoldServiceImp implements IProductSoldService{
                     .build();
             return productSoldDTOMapper.apply(productSoldRepository.save(sold));
         }else{
-            return null;
+            throw new ProductSoldException("The request to save is null");
         }
     }
 
@@ -42,7 +45,7 @@ public class ProductSoldServiceImp implements IProductSoldService{
             sold.setPrice(productSoldRequestDTO.price());
             return productSoldDTOMapper.apply(productSoldRepository.save(sold));
         }else{
-            return null;
+           throw new ProductSoldException("The product sold to updates doesn't exist");
         }
 
     }
@@ -53,7 +56,7 @@ public class ProductSoldServiceImp implements IProductSoldService{
             productSoldRepository.deleteById(id);
             return true;
         }else{
-            return false;
+            throw new ProductSoldException("The product sold fetched to delete doesn't exist");
         }
     }
 
@@ -63,31 +66,31 @@ public class ProductSoldServiceImp implements IProductSoldService{
         if(productSold!=null){
             return productSoldDTOMapper.apply(productSold);
         }else{
-            return null;
+            throw new ProductSoldException("The product sold fetched by id doesn't exist");
         }
     }
 
     @Override
-    public List<ProductSoldResponseDTO> findAll() {
-        List<ProductSold> list = productSoldRepository.findAll();
+    public List<ProductSoldResponseDTO> findAll(Integer offset, Integer pageSize) {
+        Page<ProductSold> list = productSoldRepository.findAll(PageRequest.of(offset,pageSize));
         if(list!=null){
           return list.stream().map(productSold -> {
               return productSoldDTOMapper.apply(productSold);
           }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new ProductSoldException("The list of products sold is null");
         }
     }
 
     @Override
-    public List<ProductSoldResponseDTO> findProductsSoldByBarCode(String barcode) {
-        List<ProductSold> list = productSoldRepository.findProductsSoldByBarCode(barcode);
-        if(list!=null &&!list.isEmpty()){
+    public List<ProductSoldResponseDTO> findProductsSoldByBarCode(String barcode, Integer offset, Integer pageSize) {
+        Page<ProductSold> list = productSoldRepository.findProductsSoldByBarCode(barcode,PageRequest.of(offset,pageSize));
+        if(list!=null){
             return list.stream().map(productSold -> {
                 return productSoldDTOMapper.apply(productSold);
             }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new ProductSoldException("The list of product fetched by barcode is null");
         }
     }
 }

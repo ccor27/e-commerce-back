@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -36,13 +38,13 @@ class AddressRepositoryTest {
 
     @Test
     void findAddressesByPostalCode() {
-        List<Address> address = addressRepository.findAddressesByPostalCode("28903");
-        assertEquals(address.size(),3);
+        Page<Address> address = addressRepository.findAddressesByPostalCode(PageRequest.of(0,10),"28903");
+        assertEquals(address.getTotalElements(),3);
     }
 
     @Test
     void findAddressesByCountry() {
-        List<Address> addresses = addressRepository.findAddressesByCountry("France");
-        assertEquals(addresses.size(),2);
+        Page<Address> addresses = addressRepository.findAddressesByCountry(PageRequest.of(0,10),"France");
+        assertEquals(addresses.getTotalElements(),2);
     }
 }

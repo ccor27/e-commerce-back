@@ -19,6 +19,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 
@@ -127,7 +129,7 @@ class SaleServiceImpTest {
         when(saleRepository.findAll()).thenReturn(sales);
         when(saleDTOMapper.apply(any(Sale.class))).thenReturn(expectedSaleResponseDTO);
         //Act
-        List<SaleResponseDTO> responseDTOS = saleServiceImp.findAll();
+        List<SaleResponseDTO> responseDTOS = saleServiceImp.findAll(0,10);
         //Assertions
         assertNotNull(responseDTOS);
         Assertions.assertThat(responseDTOS).isEqualTo(expectedList);
@@ -208,10 +210,10 @@ class SaleServiceImpTest {
                 .createAt(new Date(2023,07,14))
                 .build();
         when(saleRepository.existsById(1L)).thenReturn(true);
-        when(saleRepository.findSaleProductsSold(1L)).thenReturn(productSolds);
+        when(saleRepository.findSaleProductsSold(1L,PageRequest.of(0,10))).thenReturn((Page<ProductSold>) productSolds);
         when(productSoldDTOMapper.apply(any(ProductSold.class))).thenReturn(productSoldResponseDTO);
         //Act
-        List<ProductSoldResponseDTO> productSoldResponseDTOS = saleServiceImp.findProductsSold(1L);
+        List<ProductSoldResponseDTO> productSoldResponseDTOS = saleServiceImp.findProductsSold(1L,0,10);
         //Assertions
         assertNotNull(productSoldResponseDTOS);
         Assertions.assertThat(productSoldResponseDTOS).isEqualTo(expectedList);

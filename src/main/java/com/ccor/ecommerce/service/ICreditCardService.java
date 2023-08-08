@@ -11,8 +11,8 @@ public interface ICreditCardService {
      CreditCardResponseDTO edit(CreditCardRequestDTO requestDTO, Long id);
      CreditCardResponseDTO findById(Long id);
      CreditCardResponseDTO findCardByNumber(String number);
-     List<CreditCardResponseDTO> findAll();
-     List<CreditCardResponseDTO> findCardsByType(String type);
+     List<CreditCardResponseDTO> findAll(Integer offset, Integer pageSize);
+     List<CreditCardResponseDTO> findCardsByType(Integer offset, Integer pageSize,String type);
      boolean remove(Long id);
 
 }

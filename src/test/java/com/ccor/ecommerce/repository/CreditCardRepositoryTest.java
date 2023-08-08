@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -37,8 +39,8 @@ class CreditCardRepositoryTest {
 
     @Test
     void findCreditCardsByTypeCard() {
-        List<CreditCard> cards = creditCardRepository.findCreditCardsByTypeCard(TypeCard.MASTER_CARD);
-        assertEquals(cards.size(),1);
+        Page<CreditCard> cards = creditCardRepository.findCreditCardsByTypeCard(PageRequest.of(0,10),TypeCard.MASTER_CARD);
+        assertEquals(cards.getTotalElements(),1);
     }
 
     @Test
