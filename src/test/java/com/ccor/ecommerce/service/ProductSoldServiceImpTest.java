@@ -14,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,10 +152,10 @@ class ProductSoldServiceImpTest {
         List<ProductSold> list = new ArrayList<>(Arrays.asList(productSold1));
         ProductSoldResponseDTO expectedProductSoldResponseDTO = new ProductSoldResponseDTO(1L,"1as2","product",10,10.0);
         List<ProductSoldResponseDTO> expectedListProductSold = new ArrayList<>(Arrays.asList(expectedProductSoldResponseDTO));
-        when(productSoldRepository.findProductsSoldByBarCode("1as2")).thenReturn(list);
+        when(productSoldRepository.findProductsSoldByBarCode("1as2", PageRequest.of(0,10))).thenReturn((Page<ProductSold>) list);
         when(productSoldDTOMapper.apply(any(ProductSold.class))).thenReturn(expectedProductSoldResponseDTO);
         //Act
-        List<ProductSoldResponseDTO> productSoldResponseDTOS = productSoldServiceImp.findProductsSoldByBarCode("1as2");
+        List<ProductSoldResponseDTO> productSoldResponseDTOS = productSoldServiceImp.findProductsSoldByBarCode("1as2",0,10);
         //Assertion
         assertNotNull(productSoldResponseDTOS);
         Assertions.assertThat(productSoldResponseDTOS).isEqualTo(expectedListProductSold);

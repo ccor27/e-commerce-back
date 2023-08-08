@@ -11,7 +11,7 @@ public interface IAddressService {
     AddressResponseDTO edit(AddressRequestDTO addressRequestDTO, Long id);
     boolean remove(Long id);
     AddressResponseDTO findById(Long id);
-    List<AddressResponseDTO> findAll();
-    List<AddressResponseDTO> findAddressesByPostalCode(String postalCode);
-    List<AddressResponseDTO> findAddressesByCountry(String country);
+    List<AddressResponseDTO> findAll(Integer offset, Integer pageSize);
+    List<AddressResponseDTO> findAddressesByPostalCode(Integer offset, Integer pageSize,String postalCode);
+    List<AddressResponseDTO> findAddressesByCountry(Integer offset, Integer pageSize,String country);
 }

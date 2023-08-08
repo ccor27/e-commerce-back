@@ -1,9 +1,6 @@
 package com.ccor.ecommerce.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @AllArgsConstructor
@@ -13,13 +10,18 @@ import lombok.*;
 @Setter
 @ToString
 @Entity
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name","barCode"})
+})
 public class ProductStock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
     private String name;
     private int amount;
     private double pricePerUnit;
+    @Column(unique = true)
     private String barCode;
     private boolean enableProduct;
 }

@@ -33,6 +33,7 @@ public class Customer extends Person implements UserDetails {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     private List<ConfirmationToken> confirmationTokens;
     private boolean enable;
+    @Column(unique = true)
     private String username;
     private String pwd;
     /**

@@ -4,6 +4,7 @@ import com.ccor.ecommerce.model.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,13 +67,13 @@ class CustomerRepositoryTest {
 
     @Test
     void findCustomerAddress() {
-        org.assertj.core.api.Assertions.assertThat(customerRepository.findCustomerAddress(1L)).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(customerRepository.findCustomerAddress(1L,PageRequest.of(0,10))).isNotNull();
     }
 
     @Test
     void findCustomerCreditCards() {
-        assertTrue(!customerRepository.findCustomerCreditCards(1L).isEmpty());
-        assertTrue(customerRepository.findCustomerCreditCards(4L).isEmpty());
+        assertTrue(!customerRepository.findCustomerCreditCards(1L,PageRequest.of(0,10)).isEmpty());
+        assertTrue(customerRepository.findCustomerCreditCards(4L,PageRequest.of(0,10)).isEmpty());
     }
 
     @Test

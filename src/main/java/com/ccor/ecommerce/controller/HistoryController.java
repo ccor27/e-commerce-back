@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.controller;
 
+import com.ccor.ecommerce.exceptions.HistoryException;
 import com.ccor.ecommerce.model.dto.HistoryRequestDTO;
 import com.ccor.ecommerce.model.dto.HistoryResponseDTO;
 import com.ccor.ecommerce.model.dto.SaleResponseDTO;
@@ -18,64 +19,87 @@ public class HistoryController {
     private IHistoryService iHistoryService;
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody HistoryRequestDTO historyRequestDTO){
-        HistoryResponseDTO historyResponseDTO = iHistoryService.save(historyRequestDTO);
-        if(historyResponseDTO!=null){
-            return new ResponseEntity<>(historyResponseDTO, HttpStatus.CREATED);
-        }else{
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+     try {
+         HistoryResponseDTO historyResponseDTO = iHistoryService.save(historyRequestDTO);
+         return new ResponseEntity<>(historyResponseDTO, HttpStatus.CREATED);
+     }catch (HistoryException ex){
+         return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+     }
+
     }
     @DeleteMapping("/{id}/remove")
     public ResponseEntity<?> remove(@PathVariable("id")Long id){
-        if(iHistoryService.remove(id)){
-            return new ResponseEntity<>(HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+     try {
+         iHistoryService.remove(id);
+         return new ResponseEntity<>(HttpStatus.OK);
+     }catch (HistoryException ex){
+         return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+     }
+
     }
     @GetMapping("/find/{id}")
     public ResponseEntity<?> findById(@PathVariable("id")Long id){
-        HistoryResponseDTO historyResponseDTO = iHistoryService.findById(id);
-        if(historyResponseDTO!=null){
+        try {
+            HistoryResponseDTO historyResponseDTO = iHistoryService.findById(id);
             return new ResponseEntity<>(historyResponseDTO,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (HistoryException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        }
+
+    }
+    @GetMapping("/find/{offset}/{pageSize}")
+    public ResponseEntity<?> findAll(@PathVariable Integer offset,@PathVariable Integer pageSize){
+        try {
+            List<HistoryResponseDTO> list = iHistoryService.findAll(offset, pageSize);
+            return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }catch (HistoryException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping("/find")
-    public ResponseEntity<?> findAll(){
-        List<HistoryResponseDTO> list = iHistoryService.findAll();
-        if(list!=null){
+    public ResponseEntity<?> findAllByDefault(){
+        try {
+            List<HistoryResponseDTO> list = iHistoryService.findAll(0, 10);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (HistoryException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/{id}/find/sales/{offset}/{pageSize}")
+    public ResponseEntity<?> findSales(@PathVariable("id")Long id, @PathVariable Integer offset,@PathVariable Integer pageSize){
+        try {
+            List<SaleResponseDTO> list = iHistoryService.findSales(id,offset,pageSize);
+            return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }catch (HistoryException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping("/{id}/find/sales")
-    public ResponseEntity<?> findSales(@PathVariable("id")Long id){
-        List<SaleResponseDTO> list = iHistoryService.findSales(id);
-        if(list!=null){
+    public ResponseEntity<?> findSalesByDefault(@PathVariable("id")Long id){
+        try {
+            List<SaleResponseDTO> list = iHistoryService.findSales(id,0,10);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (HistoryException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @PostMapping("/{id}/add/sale")
     public ResponseEntity<?> addSale(@RequestBody SaleResponseDTO saleResponseDTO, @PathVariable("id")Long id){
-        List<SaleResponseDTO> list = iHistoryService.addSale(saleResponseDTO,id);
-        if(list!=null){
+        try {
+            List<SaleResponseDTO> list = iHistoryService.addSale(saleResponseDTO,id);
             return new ResponseEntity<>(list,HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch (HistoryException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
     }
-    //TODO: search about  @Param
     @DeleteMapping("/{id_history}/remove/sale/{id_sale}")
     public ResponseEntity<?> removeSale(@PathVariable("id_sale")Long id_sale,@PathVariable("id_history")Long id_history){
-        if(iHistoryService.removeSale(id_sale,id_history)){
+        try {
+            iHistoryService.removeSale(id_sale,id_history);
             return new ResponseEntity<>(HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch (HistoryException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

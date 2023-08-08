@@ -1,11 +1,15 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.AddressException;
 import com.ccor.ecommerce.model.Address;
 import com.ccor.ecommerce.model.dto.AddressRequestDTO;
 import com.ccor.ecommerce.model.dto.AddressResponseDTO;
 import com.ccor.ecommerce.repository.AddressRepository;
 import com.ccor.ecommerce.service.mapper.AddressDTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,7 +34,7 @@ public class AddressServiceImp implements IAddressService {
             Address addressSaved = addressRepository.save(address);
             return addressDTOMapper.apply(addressSaved);
         } else {
-            return null;
+            throw new AddressException("The address to save is null");
         }
     }
 
@@ -44,7 +48,7 @@ public class AddressServiceImp implements IAddressService {
             address.setPostalCode(addressRequestDTO.postalCode());
             return addressDTOMapper.apply(addressRepository.save(address));
         }else{
-            return null;
+            throw new AddressException("The address to update doesn't exist or the request is null");
         }
     }
 
@@ -54,48 +58,55 @@ public class AddressServiceImp implements IAddressService {
             addressRepository.deleteById(id);
             return true;
         }else{
-            return false;
+            throw new AddressException("The address to delete doesn't exist");
         }
     }
 
     @Override
     public AddressResponseDTO findById(Long id) {
         Address address = addressRepository.findById(id).orElse(null);
-        return address!=null ? addressDTOMapper.apply(address) : null;
+        if(address!=null){
+            return addressDTOMapper.apply(address);
+        }else{
+            throw new AddressException("The address fetched by id doesn't exist");
+        }
     }
 
     @Override
-    public List<AddressResponseDTO> findAll() {
-        if(!addressRepository.findAll().isEmpty()){
+    public List<AddressResponseDTO> findAll(Integer offset,Integer pageSize) {
+        Page<Address> list = addressRepository.findAll(PageRequest.of(offset,pageSize));
+        if(list!=null){
             return addressRepository.findAll().stream().map(address -> {
                 return addressDTOMapper.apply(address);
             }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new AddressException("The list of addresses fetched is null");
         }
     }
 
     @Override
-    public List<AddressResponseDTO> findAddressesByPostalCode(String postalCode) {
-        if(!addressRepository.findAddressesByPostalCode(postalCode).isEmpty()){
-            return addressRepository.findAddressesByPostalCode(postalCode)
+    public List<AddressResponseDTO> findAddressesByPostalCode(Integer offset,Integer pageSize,String postalCode) {
+        Page<Address> list = addressRepository.findAddressesByPostalCode(PageRequest.of(offset,pageSize),postalCode);
+        if(list!=null){
+            return list
                     .stream().map(address -> {
                 return addressDTOMapper.apply(address);
             }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new AddressException("The list of addresses fetched by postal code is null");
         }
     }
 
     @Override
-    public List<AddressResponseDTO> findAddressesByCountry(String country) {
-        if(!addressRepository.findAddressesByCountry(country).isEmpty()){
-            return addressRepository.findAddressesByCountry(country)
+    public List<AddressResponseDTO> findAddressesByCountry(Integer offset,Integer pageSize, String country) {
+        Page<Address> list = addressRepository.findAddressesByCountry(PageRequest.of(offset,pageSize),country);
+        if(list!=null){
+            return list
                     .stream().map(address -> {
                         return addressDTOMapper.apply(address);
                     }).collect(Collectors.toList());
         }else{
-            return null;
+            throw new AddressException("The list of addresses fetched by country code is null");
         }
     }
 }

@@ -18,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 
@@ -122,12 +124,12 @@ class HistoryServiceImpTest {
                 .sales(sales)
                 .modificationDate(new Date(2023,07,14))
                 .build();
-        when(historyRepository.findHistorySales(1L)).thenReturn(sales);
+        when(historyRepository.findHistorySales(1L, PageRequest.of(0,10))).thenReturn((Page<Sale>) sales);
         when(saleDTOMapper.apply(any(Sale.class)))
                 .thenReturn(expectedSaleResponseDTO1)
                 .thenReturn(expectedSaleResponseDTO2);
         //Act
-        List<SaleResponseDTO> responseDTOS = historyServiceImp.findSales(1L);
+        List<SaleResponseDTO> responseDTOS = historyServiceImp.findSales(1L,0,10);
         //Assertions
         assertNotNull(responseDTOS);
         Assertions.assertThat(responseDTOS).isEqualTo(expectedSalesResponseDTOS);

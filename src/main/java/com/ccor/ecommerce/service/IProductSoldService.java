@@ -11,6 +11,6 @@ public interface IProductSoldService {
     ProductSoldResponseDTO edit(ProductSoldRequestDTO productSoldRequestDTO, Long id);
     boolean remove(Long id);
     ProductSoldResponseDTO findById(Long id);
-    List<ProductSoldResponseDTO> findAll();
-    List<ProductSoldResponseDTO> findProductsSoldByBarCode(String barcode);
+    List<ProductSoldResponseDTO> findAll(Integer offset, Integer pageSize);
+    List<ProductSoldResponseDTO> findProductsSoldByBarCode(String barcode,Integer offset, Integer pageSize);
 }

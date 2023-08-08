@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.controller;
 
+import com.ccor.ecommerce.exceptions.ProductSoldException;
 import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
 import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
 import com.ccor.ecommerce.service.IProductSoldService;
@@ -17,55 +18,75 @@ public class ProductSoldController {
     private IProductSoldService iProductSoldService;
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody ProductSoldRequestDTO productSoldRequestDTO){
-        ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.save(productSoldRequestDTO);
-        if(productSoldResponseDTO!=null){
-           return new ResponseEntity<>(productSoldResponseDTO, HttpStatus.CREATED);
-        }else{
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        try {
+            ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.save(productSoldRequestDTO);
+            return new ResponseEntity<>(productSoldResponseDTO, HttpStatus.CREATED);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
     @PostMapping("/{id}/edit")
     public ResponseEntity<?> edit(@RequestBody ProductSoldRequestDTO productSoldRequestDTO, @PathVariable("id")Long id){
-        ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.edit(productSoldRequestDTO,id);
-        if(productSoldResponseDTO!=null){
+        try {
+            ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.edit(productSoldRequestDTO,id);
             return new ResponseEntity<>(productSoldResponseDTO, HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
+
     }
     @DeleteMapping("/{id}/remove")
     public ResponseEntity<?> remove(@PathVariable("id")Long id){
-        if(iProductSoldService.remove(id)){
+        try {
+            iProductSoldService.remove(id);
             return new ResponseEntity<>(HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping("/find/{id}")
     public ResponseEntity<?> findById(@PathVariable("id")Long id){
-        ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.findById(id);
-        if(productSoldResponseDTO!=null){
+        try {
+            ProductSoldResponseDTO productSoldResponseDTO = iProductSoldService.findById(id);
             return new ResponseEntity<>(productSoldResponseDTO,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/find/{offset}/{pageSize}")
+    public ResponseEntity<?> findAll(@PathVariable Integer offset,@PathVariable Integer pageSize){
+        try {
+            List<ProductSoldResponseDTO> list = iProductSoldService.findAll(offset,pageSize);
+            return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping("/find")
-    public ResponseEntity<?> findAll(){
-        List<ProductSoldResponseDTO> list = iProductSoldService.findAll();
-        if(list!=null){
+    public ResponseEntity<?> findAllByDefault(){
+        try {
+            List<ProductSoldResponseDTO> list = iProductSoldService.findAll(0,10);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/find/barCode/{barcode}/{offset}/{pageSize}")
+     public ResponseEntity<?> findProductsSoldByBarCode(@PathVariable("barcode")String barCode,@PathVariable Integer offset,@PathVariable Integer pageSize){
+        try {
+            List<ProductSoldResponseDTO> list = iProductSoldService.findProductsSoldByBarCode(barCode,offset,pageSize);
+            return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping("/find/barCode/{barcode}")
-     public ResponseEntity<?> findProductsSoldByBarCode(@PathVariable("barcode")String barCode){
-        List<ProductSoldResponseDTO> list = iProductSoldService.findProductsSoldByBarCode(barCode);
-        if(list!=null){
+    public ResponseEntity<?> findProductsSoldByBarCodeByDefault(@PathVariable("barcode")String barCode){
+        try {
+            List<ProductSoldResponseDTO> list = iProductSoldService.findProductsSoldByBarCode(barCode,0,10);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (ProductSoldException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
 }

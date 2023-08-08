@@ -15,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -140,7 +142,7 @@ class CreditCardServiceImpTest {
                 .thenReturn(responseDTO1)
                 .thenReturn(responseDTO2);
         //Act
-        List<CreditCardResponseDTO> responseDTOS = creditCardServiceImp.findAll();
+        List<CreditCardResponseDTO> responseDTOS = creditCardServiceImp.findAll(0,10);
         //Assert
         assertNotNull(responseDTOS);
         assertEquals(2,responseDTOS.size());
@@ -154,7 +156,7 @@ class CreditCardServiceImpTest {
         //Arrange
         when(creditCardRepository.findAll()).thenReturn(Collections.emptyList());
         //Act
-        List<CreditCardResponseDTO> responseDTOS = creditCardServiceImp.findAll();
+        List<CreditCardResponseDTO> responseDTOS = creditCardServiceImp.findAll(0,10);
         //Assertion
         assertNotNull(responseDTOS);
         verify(creditCardRepository,times(1)).findAll();
@@ -177,15 +179,15 @@ class CreditCardServiceImpTest {
         CreditCardResponseDTO responseDTO1 = new CreditCardResponseDTO(1L,"1234","VISA");
         CreditCardResponseDTO responseDTO2 = new CreditCardResponseDTO(2L,"5678","VISA");
         List<CreditCard> cards = Arrays.asList(cardSaved1,cardSaved2);
-        when(creditCardRepository.findCreditCardsByTypeCard(TypeCard.VISA)).thenReturn(cards);
+        when(creditCardRepository.findCreditCardsByTypeCard(PageRequest.of(0,10),TypeCard.VISA)).thenReturn((Page<CreditCard>) cards);
         when(creditCardDTOMapper.apply(any(CreditCard.class)))
                 .thenReturn(responseDTO1)
                 .thenReturn(responseDTO2);
         //Act
-        List<CreditCardResponseDTO> responseDTOS = creditCardServiceImp.findCardsByType("VISA");
+        List<CreditCardResponseDTO> responseDTOS = creditCardServiceImp.findCardsByType(0,10,"VISA");
         //Assertions
         assertNotNull(responseDTOS);
-        verify(creditCardRepository,times(1)).findCreditCardsByTypeCard(TypeCard.VISA);
+        verify(creditCardRepository,times(1)).findCreditCardsByTypeCard(PageRequest.of(0,10),TypeCard.VISA);
         verify(creditCardDTOMapper,times(2)).apply(any(CreditCard.class));
 
     }
