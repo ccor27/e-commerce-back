@@ -49,6 +49,7 @@ public class SaleServiceImp implements ISaleService{
                         .createAt(new Date())
                         .build();
             }
+
             return saleDTOMapper.apply(saleRepository.save(sale));
         }else{
          throw new SaleException("The request to save is null");

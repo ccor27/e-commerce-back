@@ -9,6 +9,7 @@ public record SaleResponseDTO(
         Long id,
         String concept,
         List<ProductSoldResponseDTO> products,
-        Date createAt
+        Date createAt,
+        Long paymentId
 ) {
 }
