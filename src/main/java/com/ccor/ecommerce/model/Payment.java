@@ -1,13 +1,11 @@
 package com.ccor.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerator;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,18 +14,22 @@ import java.util.List;
 @Setter
 @ToString
 @Entity
-public class Sale {
+public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String concept;
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "sale_products")
-    private List<ProductSold> productsSold;
-    @Temporal(TemporalType.DATE)
+    @Enumerated(EnumType.STRING)
+    private StatusPayment statusPayment;
     private Date createAt;
-    @OneToOne(mappedBy = "sale")
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+    @ManyToOne
+    @JoinColumn(name = "credit_card_id")
+    private CreditCard card;
+    //@OneToOne()
+    @OneToOne
+    @JoinColumn(name = "sale_id")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
-    private Payment payment;
-
+    private Sale sale;
 }

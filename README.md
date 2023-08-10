@@ -5,7 +5,9 @@ The way that I will do this project is by versions, so every version will have s
 
 The project is about a simple API to an ecommerce where the customers could register and buy products.
 ## versions
-The current version is v1.
+The current version is v2.
+
+**v2**: added some exceptions, the payment class, implementation of pagination and resent the email confirmation when it is expired. 
 
 **v1**: created project’s bases, security based authentication and authorization,implementation of JWT, email confirmation to register and service and repository layers tested.
 

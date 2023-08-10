@@ -16,16 +16,6 @@ INSERT INTO history DEFAULT VALUES;
 UPDATE customer SET history_id=1 WHERE id=1;
 UPDATE customer SET history_id=2 WHERE id=2;
 --productStock
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('TV',20,150000.0,'7-1242-3525-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Laptop',15,200000.0,'6-9274-3525-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Keyboard',5,90000.0,'6-1233-3344-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Mouse',20,15000.0,'6-1111-1247-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Headphones',9,95000.0,'6-9973-2361-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Desktop',30,350000.0,'8-66423-1572-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Chair',300,150000.0,'8-0096-0030-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Webcam',80,100000.0,'6-9980-1234-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Laptop charger',25,90000.0,'6-3342-9989-9',true);
---INSERT INTO product_stock (name,amount,price_per_unit,bar_code,enable_product) values('Computer screen',30,130000.0,'6-1772-7199-9',true);
 insert into product_stock (name, amount, price_per_unit, bar_code, enable_product) values ('Kris', 77, 890.18, '70-935-0702',true );
 insert into product_stock (name, amount, price_per_unit, bar_code, enable_product) values ('Alissa', 25, 896.17, '22-685-1621',true );
 insert into product_stock (name, amount, price_per_unit, bar_code, enable_product) values ('Cynthie', 48, 563.41, '04-714-3217',true );
@@ -46,3 +36,12 @@ insert into product_stock (name, amount, price_per_unit, bar_code, enable_produc
 insert into product_stock (name, amount, price_per_unit, bar_code, enable_product) values ('Yancy', 24, 879.23, '55-326-8926', true);
 insert into product_stock (name, amount, price_per_unit, bar_code, enable_product) values ('Rafaelia', 78, 393.40, '25-973-8065', true);
 insert into product_stock (name, amount, price_per_unit, bar_code, enable_product) values ('Margalo', 58, 167.79, '94-245-3319', true);
+--products sold
+insert into product_sold (bar_code,name,amount,price) values ('94-245-3319','Margalo',10,1677.9);
+insert into product_sold (bar_code,name,amount,price) values ('25-973-8065','Rafaelia',10,3934.0);
+insert into product_sold (bar_code,name,amount,price) values ('47-827-0705','Celine',1,433.91);
+insert into product_sold (bar_code,name,amount,price) values ('25-973-8065','Rafaelia',5,1967);
+--payment
+insert into payment (status_payment,create_at,credit_card_id,customer_id) values ('PAID','2023-08-09',1,1);
+
+

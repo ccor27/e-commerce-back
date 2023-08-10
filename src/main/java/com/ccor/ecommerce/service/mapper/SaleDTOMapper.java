@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service.mapper;
 
+import com.ccor.ecommerce.model.Payment;
 import com.ccor.ecommerce.model.ProductSold;
 import com.ccor.ecommerce.model.Sale;
 import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
@@ -21,8 +22,12 @@ public class SaleDTOMapper implements Function<Sale, SaleResponseDTO> {
                 sale.getId(),
                 sale.getConcept(),
                 productSoldResponseDTOS(sale.getProductsSold()),
-                sale.getCreateAt()
+                sale.getCreateAt(),
+                existPayment(sale.getPayment())
         );
+    }
+    private Long existPayment(Payment payment){
+        return payment!=null ? payment.getId() : null;
     }
     private List<ProductSoldResponseDTO> productSoldResponseDTOS(List<ProductSold> list) {
         if (list != null || list.size() > 0) {
