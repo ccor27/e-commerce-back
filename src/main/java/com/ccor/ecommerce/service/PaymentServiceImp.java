@@ -29,15 +29,11 @@ public class PaymentServiceImp implements IPaymentService{
     @Autowired
     private CreditCardRepository creditCardRepository;
     @Autowired
-    private SaleRepository saleRepository;
-    @Autowired
     private PaymentDTOMapper paymentDTOMapper;
     @Autowired
     private CustomerDTOMapper customerDTOMapper;
     @Autowired
     private CreditCardDTOMapper creditCardDTOMapper;
-    @Autowired
-    private SaleDTOMapper saleDTOMapper;
 
     @Override
     public PaymentResponseDTO save(PaymentRequestDTO paymentRequestDTO) {
@@ -47,7 +43,7 @@ public class PaymentServiceImp implements IPaymentService{
                     .createAt(new Date())
                     .customer(findCustomer(paymentRequestDTO.customer().id()))
                     .card(findCreditCard(paymentRequestDTO.card().id()))
-                    .sale(findSale(paymentRequestDTO.sale().id()))
+                   // .sale(findSale(paymentRequestDTO.sale().id()))
                     .build();
               payment = paymentRepository.save(payment);
               return paymentDTOMapper.apply(payment);
@@ -73,10 +69,6 @@ public class PaymentServiceImp implements IPaymentService{
        CreditCard c = creditCardRepository.findById(id).orElse(null);
        return c;
     }
-    private Sale findSale(Long id){
-         Sale s = saleRepository.findById(id).orElse(null);
-         return s;
-    }
     @Override
     public PaymentResponseDTO edit(PaymentRequestDTO paymentRequestDTO, Long id) {
         Payment payment = paymentRepository.findById(id).orElse(null);
@@ -84,7 +76,6 @@ public class PaymentServiceImp implements IPaymentService{
             payment.setStatusPayment(knowStatus(paymentRequestDTO.statusPayment()));
             payment.setCustomer(findCustomer(paymentRequestDTO.customer().id()));
             payment.setCard(findCreditCard(paymentRequestDTO.card().id()));
-            payment.setSale(findSale(paymentRequestDTO.sale().id()));
             payment.setCreateAt(paymentRequestDTO.createAt());
             payment = paymentRepository.save(payment);
             return paymentDTOMapper.apply(payment);
@@ -140,7 +131,7 @@ public class PaymentServiceImp implements IPaymentService{
 
     @Override
     public List<PaymentResponseDTO> findPaymentsByStatus(Integer offset, Integer pageSize, String statusPayment) {
-        Page<Payment> list = paymentRepository.findPaymentSalesByStatus(knowStatus(statusPayment),PageRequest.of(offset,pageSize));
+        Page<Payment> list = paymentRepository.findPaymentsByStatus(knowStatus(statusPayment),PageRequest.of(offset,pageSize));
         if(list!=null){
             return list.stream().map(payment -> {
                 return paymentDTOMapper.apply(payment);
@@ -167,16 +158,6 @@ public class PaymentServiceImp implements IPaymentService{
             return creditCardDTOMapper.apply(card);
         }else{
             throw new PaymentException("The payment's card doesn't exist");
-        }
-    }
-
-    @Override
-    public SaleResponseDTO findSalePayment(Long id) {
-        Sale sale = paymentRepository.findSale(id).orElse(null);
-        if(sale!=null){
-            return saleDTOMapper.apply(sale);
-        }else{
-            throw new PaymentException("The payment's sale doesn't exist");
         }
     }
 }

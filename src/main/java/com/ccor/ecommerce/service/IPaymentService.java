@@ -14,6 +14,5 @@ public interface IPaymentService {
     List<PaymentResponseDTO> findPaymentsByStatus(Integer offset, Integer pageSize, String statusPayment);
     CustomerResponseDTO findCustomerPayment(Long id);
     CreditCardResponseDTO findCardPayment(Long id);
-    SaleResponseDTO findSalePayment(Long id);
 
 }

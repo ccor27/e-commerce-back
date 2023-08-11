@@ -26,8 +26,8 @@ public class Sale {
     private List<ProductSold> productsSold;
     @Temporal(TemporalType.DATE)
     private Date createAt;
-    @OneToOne(mappedBy = "sale")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
+    @OneToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "payment_id")
     private Payment payment;
 
 }

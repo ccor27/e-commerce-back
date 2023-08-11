@@ -68,14 +68,14 @@ public class SecurityConfig {
                                 "/api/v1/sale/{id}/add/product",
                                 "/api/v1/sale/{id_sale}/remove/product/{id_product}",
                                 "/api/v1/sale/{id}/find/products",
+                                "/api/v1/sale/find/{id}/payment",
                                 "/api/v1/payment/edit/{id}",
                                 "/api/v1/payment/change/status/{status}/{id}",
                                 "/api/v1/payment/find",
                                 "/api/v1/payment/remove/{id}",
                                 "/api/v1/payment/find/status/{status}",
                                 "/api/v1/payment/find/{id}/customer",
-                                "/api/v1/payment/find/{id}/card",
-                                "/api/v1/payment/find/{id}/sale" };
+                                "/api/v1/payment/find/{id}/card"};
     private static final String[] customersUrls =
                         {"/api/v1/customer/find/{id}",
                          "/api/v1/customer/{id}/edit",

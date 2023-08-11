@@ -14,8 +14,8 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
     Optional<Customer> findCustomer(@Param("id") Long id);
     @Query("SELECT p.card FROM Payment p WHERE p.id=:id")
     Optional<CreditCard> findCard(@Param("id")Long id);
-    @Query("SELECT p.sale FROM Payment p WHERE p.id=:id")
-    Optional<Sale> findSale(@Param("id")Long id);
+    /*@Query("SELECT p.sale FROM Payment p WHERE p.id=:id")
+    Optional<Sale> findSale(@Param("id")Long id);*/
     @Query("SELECT p FROM Payment p WHERE p.statusPayment=:status")
-    Page<Payment> findPaymentSalesByStatus(@Param("status")StatusPayment statusPayment, Pageable pageable);
+    Page<Payment> findPaymentsByStatus(@Param("status")StatusPayment statusPayment, Pageable pageable);
 }

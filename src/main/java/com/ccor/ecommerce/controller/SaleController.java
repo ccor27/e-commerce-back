@@ -1,10 +1,7 @@
 package com.ccor.ecommerce.controller;
 
 import com.ccor.ecommerce.exceptions.SaleException;
-import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
-import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
-import com.ccor.ecommerce.model.dto.SaleRequestDTO;
-import com.ccor.ecommerce.model.dto.SaleResponseDTO;
+import com.ccor.ecommerce.model.dto.*;
 import com.ccor.ecommerce.service.ISaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -99,6 +96,15 @@ public class SaleController {
         try {
             List<ProductSoldResponseDTO> list = iSaleService.findProductsSold(id,0,10);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
+        }catch (SaleException ex){
+            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+        }
+    }
+    @GetMapping("/find/{id}/payment")
+    public ResponseEntity<?> findPayment(@PathVariable("id")Long id){
+        try {
+            PaymentResponseDTO responseDTO = iSaleService.findPayment(id);
+            return new ResponseEntity<>(responseDTO,HttpStatus.FOUND);
         }catch (SaleException ex){
             return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }

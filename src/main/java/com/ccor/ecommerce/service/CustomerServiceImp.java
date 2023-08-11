@@ -74,7 +74,6 @@ public class CustomerServiceImp implements ICustomerService{
                 )
         );
         Customer customer = customerRepository.findCustomerByUsername(username).orElse(null);
-        System.out.println("Roles customer authenticate "+customer.getRoles());
         String jwtToken = jwtService.generateToken(customer);
         revokeAllCustomerTokens(customer);
         saveCustomerToken(customer,jwtToken);
