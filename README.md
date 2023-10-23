@@ -10,6 +10,7 @@ The current version is v2.
 **v2**: added some exceptions, the payment class, implementation of pagination and resent the email confirmation when it is expired. 
 
 **v1**: created project’s bases, security based authentication and authorization,implementation of JWT, email confirmation to register and service and repository layers tested.
+**v3**: OAuth2 with google added in order the customers can make login with it's google account
 
 ## Tools and dependencies
 * Java 17
