@@ -6,7 +6,6 @@ public record PaymentRequestDTO(
         String statusPayment,
         Date createAt,
         CustomerResponseDTO customer,
-        CreditCardResponseDTO card,
-        SaleResponseDTO sale
+        CreditCardResponseDTO card
 ) {
 }

@@ -117,13 +117,4 @@ public class PaymentController {
             return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
         }
     }
-    @GetMapping("/find/{id}/sale")
-    public ResponseEntity<?> findPaymentSale(@PathVariable Long id){
-        try {
-            SaleResponseDTO responseDTO = iPaymentService.findSalePayment(id);
-            return new ResponseEntity<>(responseDTO,HttpStatus.FOUND);
-        }catch (PaymentException ex){
-            return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
-        }
-    }
 }

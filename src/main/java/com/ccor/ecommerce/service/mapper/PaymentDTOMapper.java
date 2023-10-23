@@ -17,8 +17,7 @@ public class PaymentDTOMapper implements Function<Payment, PaymentResponseDTO> {
                 payment.getStatusPayment().name(),
                 payment.getCreateAt(),
                 existCustomer(payment),
-                existCard(payment),
-                existSale(payment)
+                existCard(payment)
         );
     }
     private Long existCustomer(Payment payment){
@@ -29,8 +28,9 @@ public class PaymentDTOMapper implements Function<Payment, PaymentResponseDTO> {
         CreditCard card = payment.getCard();
         return card!=null ? card.getId() : null;
     }
-    private Long existSale(Payment payment){
+    /*private Long existSale(Payment payment){
         Sale sale = payment.getSale();
+        System.out.println("payment's sale: "+sale.getId() +" "+sale.getConcept());
         return sale!=null ? sale.getId() : null;
-    }
+    }*/
 }

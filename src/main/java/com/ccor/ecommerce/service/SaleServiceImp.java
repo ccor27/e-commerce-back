@@ -1,14 +1,13 @@
 package com.ccor.ecommerce.service;
 
 import com.ccor.ecommerce.exceptions.SaleException;
-import com.ccor.ecommerce.model.ProductSold;
-import com.ccor.ecommerce.model.Sale;
-import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
-import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
-import com.ccor.ecommerce.model.dto.SaleRequestDTO;
-import com.ccor.ecommerce.model.dto.SaleResponseDTO;
+import com.ccor.ecommerce.model.*;
+import com.ccor.ecommerce.model.dto.*;
+import com.ccor.ecommerce.repository.CreditCardRepository;
+import com.ccor.ecommerce.repository.CustomerRepository;
 import com.ccor.ecommerce.repository.ProductSoldRepository;
 import com.ccor.ecommerce.repository.SaleRepository;
+import com.ccor.ecommerce.service.mapper.PaymentDTOMapper;
 import com.ccor.ecommerce.service.mapper.ProductSoldDTOMapper;
 import com.ccor.ecommerce.service.mapper.SaleDTOMapper;
 import jakarta.transaction.Transactional;
@@ -27,9 +26,15 @@ public class SaleServiceImp implements ISaleService{
     @Autowired
     private SaleRepository saleRepository;
     @Autowired
+    private CustomerRepository customerRepository;
+    @Autowired
+    private CreditCardRepository creditCardRepository;
+    @Autowired
     private ProductSoldRepository productSoldRepository;
     @Autowired
     private SaleDTOMapper saleDTOMapper;
+    @Autowired
+    private PaymentDTOMapper paymentDTOMapper;
     @Autowired
     private ProductSoldDTOMapper productSoldDTOMapper;
     @Override
@@ -48,14 +53,47 @@ public class SaleServiceImp implements ISaleService{
                         .productsSold(new ArrayList<>())
                         .createAt(new Date())
                         .build();
-            }
 
+            }
+            Payment payment = existPayment(saleRequestDTO.payment());
+            sale.setPayment(payment);
             return saleDTOMapper.apply(saleRepository.save(sale));
         }else{
          throw new SaleException("The request to save is null");
         }
     }
 
+    private Payment existPayment(PaymentRequestDTO paymentRequestDTO){
+        if(paymentRequestDTO!=null){
+            Payment payment = Payment.builder()
+                    .statusPayment(knowStatus(paymentRequestDTO.statusPayment()))
+                    .createAt(new Date())
+                    .customer(findCustomer(paymentRequestDTO.customer().id()))
+                    .card(findCreditCard(paymentRequestDTO.card().id()))
+                    .build();
+            return payment;
+        }else{
+            return null;
+        }
+    }
+    private StatusPayment knowStatus(String status){
+        switch (status.toLowerCase()){
+            case "paid":
+                return StatusPayment.PAID;
+            case "unpaid":
+                return StatusPayment.UNPAID;
+            default:
+                return null;
+        }
+    }
+    private Customer findCustomer(Long id){
+        Customer c = customerRepository.findById(id).orElse(null);
+        return c;
+    }
+    private CreditCard findCreditCard(Long id){
+        CreditCard c = creditCardRepository.findById(id).orElse(null);
+        return c;
+    }
     private List<ProductSold> productsSold(List<ProductSoldRequestDTO> list){
         if(list!=null){
             return list.stream().map(productSoldRequestDTO -> {
@@ -150,5 +188,16 @@ public class SaleServiceImp implements ISaleService{
         }else{
             throw new SaleException("The sale fetched to find its product doesn't exist");
         }
+    }
+
+    @Override
+    public PaymentResponseDTO findPayment(Long id) {
+        Payment payment = saleRepository.findPaymentSale(id).orElse(null);
+        if(payment!=null){
+            return paymentDTOMapper.apply(payment);
+        }else{
+            throw new SaleException("The sale fetch doesn't exist or the sale has not payment yet");
+        }
+
     }
 }

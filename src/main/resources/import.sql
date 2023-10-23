@@ -1,8 +1,10 @@
 INSERT INTO customer (cellphone,email,last_name,name,enable,pwd,username) values ('123456789','test@gmail.com','testLast','test',true,'$2a$10$RQc.XIhtqSv8wpic8XNpfu3S8bRh85KtUXKMGs1SEf5CFy20CL32W','test');
 INSERT INTO customer (cellphone,email,last_name,name,enable,pwd,username) values ('123456789','test2@gmail.com','test2Last','test2',true,'$2a$10$7A9UJxtuPmpsKAAR5PfohOWzPFgdvOYfy8rH2C2Ww7ww8.N.HtiQy','test2');
+INSERT INTO customer (cellphone,email,last_name,name,enable,pwd,username) values ('345222389','cris300oso@gmail.com','osorio','cristian',true,'$2a$10$7A9UJxtuPmpsKAAR5PfohOWzPFgdvOYfy8rH2C2Ww7ww8.N.HtiQy','rocky');
 INSERT INTO customer_roles (customer_id,role) values (1,'CUSTOMER');
 INSERT INTO customer_roles (customer_id,role) values (1,'ADMIN');
 INSERT INTO customer_roles (customer_id,role) values (2,'ADMIN');
+INSERT INTO customer_roles (customer_id,role) values (3,'CUSTOMER');
 --address
 INSERT INTO address (customer_id,street,country,postal_code) values(1,'spain','Spain','28903');
 INSERT INTO address (customer_id,street,country,postal_code) values(2,'valencia','Spain','87390');

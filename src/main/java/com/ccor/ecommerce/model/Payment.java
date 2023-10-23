@@ -27,9 +27,4 @@ public class Payment {
     @ManyToOne
     @JoinColumn(name = "credit_card_id")
     private CreditCard card;
-    //@OneToOne()
-    @OneToOne
-    @JoinColumn(name = "sale_id")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
-    private Sale sale;
 }

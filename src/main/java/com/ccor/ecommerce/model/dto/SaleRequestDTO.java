@@ -8,6 +8,7 @@ import java.util.List;
 public record SaleRequestDTO(
         String concept,
         List<ProductSoldRequestDTO> products,
-        Date createAt
+        Date createAt,
+        PaymentRequestDTO payment
 ) {
 }

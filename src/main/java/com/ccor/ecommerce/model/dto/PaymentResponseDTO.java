@@ -7,8 +7,7 @@ public record PaymentResponseDTO(
         String statusPayment,
         Date createAt,
         Long customerId,
-        Long creditCardId,
-        Long saleId
+        Long creditCardId
 
 ) {
 }

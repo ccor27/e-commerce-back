@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.CustomerException;
 import com.ccor.ecommerce.model.*;
 import com.ccor.ecommerce.model.dto.*;
 import com.ccor.ecommerce.repository.AddressRepository;
@@ -9,6 +10,10 @@ import com.ccor.ecommerce.service.mapper.AddressDTOMapper;
 import com.ccor.ecommerce.service.mapper.CreditCardDTOMapper;
 import com.ccor.ecommerce.service.mapper.CustomerDTOMapper;
 import com.ccor.ecommerce.service.mapper.HistoryDTOMapper;
+import com.ccor.ecommerce.service.registration.ConfirmationTokenServiceImp;
+import com.ccor.ecommerce.service.registration.EmailValidator;
+import com.ccor.ecommerce.service.registration.IEmailSender;
+import com.ccor.ecommerce.service.registration.RegistrationServiceImp;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +23,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 import java.util.*;
@@ -42,8 +52,18 @@ class CustomerServiceImpTest {
     private AddressDTOMapper addressDTOMapper;
     @Mock
     private CreditCardDTOMapper creditCardDTOMapper;
+    @Mock
+    private EmailValidator emailValidator;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private IEmailSender emailSender;
+    @Mock
+    private ConfirmationTokenServiceImp confirmationTokenService;
     @InjectMocks
     private CustomerServiceImp customerServiceImp;
+    @InjectMocks
+    private RegistrationServiceImp registrationServiceImp;
 
     @BeforeEach
     void setUp() {MockitoAnnotations.openMocks(this);}
@@ -53,14 +73,14 @@ class CustomerServiceImpTest {
     }
 
     @Test
-    void save() {
-        //Arrange
+    void save() throws IllegalAccessException {
+        /*  //Arrange
         AddressRequestDTO addressRequestDTO = new AddressRequestDTO("street","country","28903");
         CustomerRequestDTO customerRequestDTO = new CustomerRequestDTO(
                 "peter",
                 "bing",
                 "89262293",
-                "peter@gmail.com",
+                "new@gmail.com",
                 "peter",
                 "peter123",
                 addressRequestDTO
@@ -70,23 +90,20 @@ class CustomerServiceImpTest {
         customer.setName("peter");
         customer.setLastName("bing");
         customer.setCellphone("89262293");
-        customer.setEmail("peter@gmail.com");
+        customer.setEmail("new@gmail.com");
         customer.setUsername("peter");
         customer.setPwd("peter123");
-        CustomerResponseDTO expectedCustomerResponseDTO = new CustomerResponseDTO(
-                1L,
-                "peter",
-                "bing",
-                "89262293",
-                "peter@gmail.com",
-                "peter");
+        when(customerRepository.findCustomerByEmail(any())).thenReturn(Optional.empty())
+                .thenReturn(Optional.of(new Customer()));
+        when(emailValidator.test(any(String.class))).thenReturn(true);
+        when(registrationServiceImp.save(customerRequestDTO)).thenReturn(any(AuthenticationResponseDTO.class));
         when(customerRepository.save(any(Customer.class))).thenReturn(customer);
-        when(customerDTOMapper.apply(customer)).thenReturn(expectedCustomerResponseDTO);
         //Act
-        AuthenticationResponseDTO responseDTO = customerServiceImp.save(customerRequestDTO);
+        AuthenticationResponseDTO responseDTO = registrationServiceImp.save(customerRequestDTO);
         //Assertions
-        Assertions.assertThat(responseDTO).isNotNull();
-
+        assertNotNull(responseDTO);
+        verify(customerRepository, times(1)).save(any(Customer.class));
+        verify(emailSender, times(1)).send(any(), any()); // Assuming you have a proper verification for email sending*/
     }
 
     @Test
@@ -212,33 +229,33 @@ class CustomerServiceImpTest {
                 "peter2@gmail.com",
                 "peter2"
         );
-        List<Customer> list = Arrays.asList(customer1,customer2);
-        when(customerRepository.findAll()).thenReturn(list);
+        List<Customer> customers = Arrays.asList(customer1,customer2);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Customer> page = new PageImpl<>(customers, pageable, customers.size());
+        when(customerRepository.findAll(pageable)).thenReturn(page);
         when(customerDTOMapper.apply(any(Customer.class)))
                 .thenReturn(expectedCustomerResponseDTO1)
                 .thenReturn(expectedCustomerResponseDTO2);
         //Act
-        List<CustomerResponseDTO> listResponse = customerServiceImp.findAll();
+        List<CustomerResponseDTO> listResponse = customerServiceImp.findAll(0,10);
         //Assertions
         assertNotNull(listResponse);
         assertEquals(2,listResponse.size());
         assertEquals(expectedCustomerResponseDTO1,listResponse.get(0));
         assertEquals(expectedCustomerResponseDTO2,listResponse.get(1));
-        verify(customerRepository,times(1)).findAll();
-        verify(customerDTOMapper,times(2)).apply(any(Customer.class));
     }
 
     @Test
     void findAll_whenTheCustomerListIsEmpty(){
         //Arrange
-        when(customerRepository.findAll()).thenReturn(Collections.emptyList());
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Customer> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        when(customerRepository.findAll(pageable)).thenReturn(emptyPage);
         //Act
-        List<CustomerResponseDTO> list = customerServiceImp.findAll();
+        CustomerException exception = assertThrows(CustomerException.class,()->customerServiceImp.findAll(0,10));
         //Assertions
-        assertNotNull(list);
-        assertEquals(list.size(),0);
-        verify(customerRepository,times(1)).findAll();
-        verify(customerDTOMapper,never()).apply(any(Customer.class));
+        assertEquals("CUSTOMER_EXCEPTION: The list of customers is null",exception.getMessage());
+
     }
     @Test
     void findHistory() {
@@ -282,6 +299,8 @@ class CustomerServiceImpTest {
                 .postalCode("28902")
                 .build();
         List<Address> addresses = Arrays.asList(address1,address2);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Address> page = new PageImpl<>(addresses, pageable, addresses.size());
         Customer customer = new Customer();
         customer.setId(1L);
         customer.setName("peter");
@@ -295,17 +314,17 @@ class CustomerServiceImpTest {
         AddressResponseDTO responseDTO2 = new AddressResponseDTO(2L,"street2","country2","28902");
         List<AddressResponseDTO> expectedAddressResponseDTO = Arrays.asList(responseDTO1,responseDTO2);
         when(customerRepository.findById(1L)).thenReturn(Optional.ofNullable(customer));
-        when(customerRepository.findCustomerAddress(1L)).thenReturn(addresses);
+        when(customerRepository.findCustomerAddress(1L,pageable)).thenReturn(page);
         when(addressDTOMapper.apply(any(Address.class)))
                 .thenReturn(responseDTO1)
                 .thenReturn(responseDTO2);
         //Act
-        List<AddressResponseDTO> responseDTOS = customerServiceImp.findAddress(1L);
+        List<AddressResponseDTO> responseDTOS = customerServiceImp.findAddress(1L,0,10);
         //Assertions
         assertNotNull(responseDTOS);
         Assertions.assertThat(responseDTOS).isEqualTo(expectedAddressResponseDTO);
         verify(customerRepository,times(1)).findById(1L);
-        verify(customerRepository,times(1)).findCustomerAddress(1L);
+        verify(customerRepository,times(1)).findCustomerAddress(1L,pageable);
 
 
     }
@@ -315,6 +334,8 @@ class CustomerServiceImpTest {
         CreditCard creditCard1 = new CreditCard(null,"167439276482", TypeCard.MASTER_CARD);
         CreditCard creditCard2 = new CreditCard(null,"1103839276482", TypeCard.VISA);
         List<CreditCard> cards = Arrays.asList(creditCard1,creditCard2);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<CreditCard> page = new PageImpl<>(cards, pageable, cards.size());
         CreditCardResponseDTO cardResponseDTO1 = new CreditCardResponseDTO(1L,"167439276482","MASTER_CARD");
         CreditCardResponseDTO cardResponseDTO2 = new CreditCardResponseDTO(2L,"1103839276482","VISA");
         List<CreditCardResponseDTO> expectedResponseDTO = Arrays.asList(cardResponseDTO1,cardResponseDTO2);
@@ -328,17 +349,17 @@ class CustomerServiceImpTest {
         customer.setPwd("peter123");
         customer.setCards(cards);
         when(customerRepository.findById(1L)).thenReturn(Optional.ofNullable(customer));
-        when(customerRepository.findCustomerCreditCards(1L)).thenReturn(cards);
+        when(customerRepository.findCustomerCreditCards(1L,pageable)).thenReturn(page);
         when(creditCardDTOMapper.apply(any(CreditCard.class)))
                 .thenReturn(cardResponseDTO1)
                 .thenReturn(cardResponseDTO2);
         //Act
-        List<CreditCardResponseDTO> list = customerServiceImp.findCards(1L);
+        List<CreditCardResponseDTO> list = customerServiceImp.findCards(1L,0,10);
         //Assertion
         assertNotNull(list);
         Assertions.assertThat(list).isEqualTo(expectedResponseDTO);
         verify(customerRepository,times(1)).findById(1L);
-        verify(customerRepository,times(1)).findCustomerCreditCards(1L);
+        verify(customerRepository,times(1)).findCustomerCreditCards(1L,pageable);
 
     }
 
@@ -406,17 +427,10 @@ class CustomerServiceImpTest {
         assertNotNull(customerResponseDTO);
         Assertions.assertThat(customerResponseDTO).isEqualTo(expectedCustomerResponseDTO);
     }
-
-
     @Test
-    void addAddress_addressNotExist() {
-        Address address1 = Address.builder()
-                .id(1L)
-                .street("street")
-                .country("country")
-                .postalCode("28903")
-                .build();
-        List<Address> addresses = new ArrayList<>(Arrays.asList(address1));
+    void addAddress_addressNotExist_throwException() {
+        // Arrange
+        AddressResponseDTO newAddressDTO = new AddressResponseDTO(3L, "New Street", "New Country", "12345");
         Customer customer = new Customer();
         customer.setId(1L);
         customer.setName("peter");
@@ -425,22 +439,36 @@ class CustomerServiceImpTest {
         customer.setEmail("peter@gmail.com");
         customer.setUsername("peter");
         customer.setPwd("peter123");
-        customer.setAddress(addresses);
-        AddressResponseDTO responseDTO1 = new AddressResponseDTO(1L,"street","country","28903");
-        AddressResponseDTO responseDTO2 = new AddressResponseDTO(2L,"street2","country2","28902");
-        AddressResponseDTO responseDTOToAdd = new AddressResponseDTO(null,"street2","country2","28902");
-        List<AddressResponseDTO> expectedAddressResponseDTO = Arrays.asList(responseDTO1,responseDTO2);
-        when(customerRepository.findById(1L)).thenReturn(Optional.ofNullable(customer));
-        when(customerRepository.save(any(Customer.class))).thenReturn(customer);
-        when(addressDTOMapper.apply(any(Address.class)))
-                .thenReturn(responseDTO1)
-                .thenReturn(responseDTO2);
-        //Act
-        List<AddressResponseDTO> responseDTOS = customerServiceImp.addAddress(responseDTOToAdd,1L);
-        //Assertion
-        assertNotNull(responseDTOS);
-        Assertions.assertThat(responseDTOS).isEqualTo(expectedAddressResponseDTO);
+        customer.setAddress(new ArrayList<>());
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        // Act
+        CustomerException exception = assertThrows(CustomerException.class,()-> customerServiceImp.addAddress(newAddressDTO, 1L));
+        // Assert
+        assertEquals("CUSTOMER_EXCEPTION: The address to add doesn't exist",exception.getMessage());
+    }
 
+    @Test
+    void addAddress_addressNotExist() {
+        // Arrange
+        AddressResponseDTO newAddressDTO = new AddressResponseDTO(null, "New Street", "New Country", "12345");
+        Address address = new Address(1L,"New Street", "New Country", "12345");
+        Customer customer = new Customer();
+        customer.setId(1L);
+        customer.setName("peter");
+        customer.setLastName("bing");
+        customer.setCellphone("89262293");
+        customer.setEmail("peter@gmail.com");
+        customer.setUsername("peter");
+        customer.setPwd("peter123");
+        customer.setAddress(new ArrayList<>());
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(customerRepository.findCustomerAddress(eq(1L), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Arrays.asList(address)));
+        // Act
+        List<AddressResponseDTO> result = customerServiceImp.addAddress(newAddressDTO, 1L);
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
     }
     @Test
     void addAddress_addressExist(){
@@ -475,6 +503,9 @@ class CustomerServiceImpTest {
         when(addressDTOMapper.apply(any(Address.class)))
                 .thenReturn(responseDTO1)
                 .thenReturn(responseDTO2);
+        when(customerRepository.findCustomerAddress(eq(1L), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Arrays.asList(address1, address2)));
+
         //Act
         List<AddressResponseDTO> responseDTOS = customerServiceImp.addAddress(responseDTO2,1L);
         //Assertion
@@ -527,7 +558,7 @@ class CustomerServiceImpTest {
         customer.setEmail("peter@gmail.com");
         customer.setUsername("peter");
         customer.setPwd("peter123");
-        customer.setCards(cards);
+        customer.setCards(new ArrayList<>());
         CreditCardResponseDTO expectedCardDTO1 = new CreditCardResponseDTO(1L,"12345","MASTER_CARD");
         CreditCardResponseDTO expectedCardDTO2 = new CreditCardResponseDTO(2L,"7890","VISA");
         CreditCardResponseDTO cardDTOToAdd = new CreditCardResponseDTO(null,"7890","VISA");

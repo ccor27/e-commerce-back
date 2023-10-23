@@ -1,11 +1,9 @@
 package com.ccor.ecommerce.service;
 
-import com.ccor.ecommerce.model.ProductSold;
-import com.ccor.ecommerce.model.Sale;
-import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
-import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
-import com.ccor.ecommerce.model.dto.SaleRequestDTO;
-import com.ccor.ecommerce.model.dto.SaleResponseDTO;
+import com.ccor.ecommerce.model.*;
+import com.ccor.ecommerce.model.dto.*;
+import com.ccor.ecommerce.repository.CreditCardRepository;
+import com.ccor.ecommerce.repository.CustomerRepository;
 import com.ccor.ecommerce.repository.ProductSoldRepository;
 import com.ccor.ecommerce.repository.SaleRepository;
 import com.ccor.ecommerce.service.mapper.ProductSoldDTOMapper;
@@ -20,7 +18,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
@@ -38,6 +38,10 @@ class SaleServiceImpTest {
     private SaleDTOMapper saleDTOMapper;
     @Mock
     private ProductSoldDTOMapper productSoldDTOMapper;
+    @Mock
+    private CustomerRepository customerRepository;
+    @Mock
+    private CreditCardRepository creditCardRepository;
     @InjectMocks
     private SaleServiceImp saleServiceImp;
 
@@ -58,9 +62,13 @@ class SaleServiceImpTest {
                 .concept("concept")
                 .productsSold(Collections.emptyList())
                 .createAt(new Date(2023,07,14))
+                .payment(new Payment())
                 .build();
-        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
-        SaleRequestDTO saleRequestDTO = new SaleRequestDTO("concept",Collections.emptyList(),new Date(2023,07,14));
+        CustomerResponseDTO customerResponseDTO = new CustomerResponseDTO(1L,"","","","","");
+        CreditCardResponseDTO cardResponseDTO = new CreditCardResponseDTO(1L,"","");
+        PaymentRequestDTO requestDTO = new PaymentRequestDTO(StatusPayment.UNPAID.name(),null,customerResponseDTO,cardResponseDTO);
+        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14),1L);
+        SaleRequestDTO saleRequestDTO = new SaleRequestDTO("concept",Collections.emptyList(),new Date(2023,07,14),requestDTO);
         when(saleRepository.save(any(Sale.class))).thenReturn(sale);
         when(saleDTOMapper.apply(any(Sale.class))).thenReturn(expectedSaleResponseDTO);
         //Act
@@ -79,8 +87,9 @@ class SaleServiceImpTest {
                 .productsSold(Collections.emptyList())
                 .createAt(new Date(2023,07,14))
                 .build();
-        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"conceptEdited",Collections.emptyList(),new Date(2023,07,14));
-        SaleRequestDTO saleRequestDTO = new SaleRequestDTO("conceptEdited",Collections.emptyList(),new Date(2023,07,14));
+        PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO("",new Date(),null,null);
+        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"conceptEdited",Collections.emptyList(),new Date(2023,07,14),1L);
+        SaleRequestDTO saleRequestDTO = new SaleRequestDTO("conceptEdited",Collections.emptyList(),new Date(2023,07,14),paymentRequestDTO);
         when(saleRepository.findById(1L)).thenReturn(Optional.ofNullable(sale));
         when(saleDTOMapper.apply(any(Sale.class))).thenReturn(expectedSaleResponseDTO);
         //Act
@@ -99,8 +108,9 @@ class SaleServiceImpTest {
                 .concept("concept")
                 .productsSold(Collections.emptyList())
                 .createAt(new Date(2023,07,14))
+                .payment(new Payment())
                 .build();
-        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
+        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14),1L);
         when(saleRepository.findById(1L)).thenReturn(Optional.ofNullable(sale));
         when(saleRepository.existsById(1L)).thenReturn(true);
         when(saleDTOMapper.apply(any(Sale.class))).thenReturn(expectedSaleResponseDTO);
@@ -122,11 +132,14 @@ class SaleServiceImpTest {
                 .concept("concept")
                 .productsSold(Collections.emptyList())
                 .createAt(new Date(2023,07,14))
+                .payment(new Payment())
                 .build();
         List<Sale> sales = new ArrayList<>(Arrays.asList(sale));
-        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Sale> page = new PageImpl<>(sales, pageable, sales.size());
+        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14),1L);
         List<SaleResponseDTO> expectedList = new ArrayList<>(Arrays.asList(expectedSaleResponseDTO));
-        when(saleRepository.findAll()).thenReturn(sales);
+        when(saleRepository.findAll(pageable)).thenReturn(page);
         when(saleDTOMapper.apply(any(Sale.class))).thenReturn(expectedSaleResponseDTO);
         //Act
         List<SaleResponseDTO> responseDTOS = saleServiceImp.findAll(0,10);
@@ -146,8 +159,9 @@ class SaleServiceImpTest {
                 .concept("concept")
                 .productsSold(new ArrayList<>())
                 .createAt(new Date(2023,07,14))
+                .payment(new Payment())
                 .build();
-        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Arrays.asList(productSoldResponseDTO),new Date(2023,07,14));
+        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Arrays.asList(productSoldResponseDTO),new Date(2023,07,14),1L);
         when(saleRepository.save(any(Sale.class))).thenReturn(sale);
         when(saleRepository.findById(1L)).thenReturn(Optional.ofNullable(sale));
         when(saleDTOMapper.apply(any(Sale.class))).thenReturn(expectedSaleResponseDTO);
@@ -176,8 +190,9 @@ class SaleServiceImpTest {
                 .concept("concept")
                 .productsSold(new ArrayList<>(Arrays.asList(productSold)))
                 .createAt(new Date(2023,07,14))
+                .payment(new Payment())
                 .build();
-        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
+        SaleResponseDTO expectedSaleResponseDTO = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14),1L);
         when(saleRepository.save(any(Sale.class))).thenReturn(sale);
        when(saleRepository.findById(1L)).thenReturn(Optional.ofNullable(sale));
        when(productSoldRepository.findById(1L)).thenReturn(Optional.ofNullable(productSold));
@@ -201,6 +216,8 @@ class SaleServiceImpTest {
                 .price(50.0)
                 .build();
         List<ProductSold> productSolds = new ArrayList<>(Arrays.asList(productSold));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ProductSold> page = new PageImpl<>(productSolds, pageable, productSolds.size());
         ProductSoldResponseDTO productSoldResponseDTO = new ProductSoldResponseDTO(1L,"1as2","product",10,50.0);
         List<ProductSoldResponseDTO> expectedList = new ArrayList<>(Arrays.asList(productSoldResponseDTO));
         Sale sale = Sale.builder()
@@ -210,7 +227,7 @@ class SaleServiceImpTest {
                 .createAt(new Date(2023,07,14))
                 .build();
         when(saleRepository.existsById(1L)).thenReturn(true);
-        when(saleRepository.findSaleProductsSold(1L,PageRequest.of(0,10))).thenReturn((Page<ProductSold>) productSolds);
+        when(saleRepository.findSaleProductsSold(1L,pageable)).thenReturn(page);
         when(productSoldDTOMapper.apply(any(ProductSold.class))).thenReturn(productSoldResponseDTO);
         //Act
         List<ProductSoldResponseDTO> productSoldResponseDTOS = saleServiceImp.findProductsSold(1L,0,10);

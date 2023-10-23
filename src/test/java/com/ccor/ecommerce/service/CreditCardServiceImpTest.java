@@ -1,5 +1,7 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.CreditCardException;
+import com.ccor.ecommerce.model.Address;
 import com.ccor.ecommerce.model.CreditCard;
 import com.ccor.ecommerce.model.TypeCard;
 import com.ccor.ecommerce.model.dto.CreditCardRequestDTO;
@@ -16,7 +18,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,7 +141,9 @@ class CreditCardServiceImpTest {
         CreditCardResponseDTO responseDTO1 = new CreditCardResponseDTO(1L,"1234","VISA");
         CreditCardResponseDTO responseDTO2 = new CreditCardResponseDTO(2L,"5678","MASTER_CARD");
         List<CreditCard> cards = Arrays.asList(cardSaved1,cardSaved2);
-        when(creditCardRepository.findAll()).thenReturn(cards);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<CreditCard> page = new PageImpl<>(cards, pageable, cards.size());
+        when(creditCardRepository.findAll(pageable)).thenReturn(page);
         when(creditCardDTOMapper.apply(any(CreditCard.class)))
                 .thenReturn(responseDTO1)
                 .thenReturn(responseDTO2);
@@ -148,19 +154,20 @@ class CreditCardServiceImpTest {
         assertEquals(2,responseDTOS.size());
         assertEquals(responseDTO1,responseDTOS.get(0));
         assertEquals(responseDTO2,responseDTOS.get(1));
-        verify(creditCardRepository,times(1)).findAll();
+        verify(creditCardRepository,times(1)).findAll(pageable);
         verify(creditCardDTOMapper,times(2)).apply(any(CreditCard.class));
     }
     @Test
     void findAllEmptyList(){
         //Arrange
-        when(creditCardRepository.findAll()).thenReturn(Collections.emptyList());
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<CreditCard> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(creditCardRepository.findAll(pageable)).thenReturn(emptyPage);
         //Act
-        List<CreditCardResponseDTO> responseDTOS = creditCardServiceImp.findAll(0,10);
+        CreditCardException exception =  assertThrows(CreditCardException.class, ()->creditCardServiceImp.findAll(0,10));
         //Assertion
-        assertNotNull(responseDTOS);
-        verify(creditCardRepository,times(1)).findAll();
-        verify(creditCardDTOMapper,never()).apply(any(CreditCard.class));
+        assertEquals("CREDIT_CARD_EXCEPTION: The list of card is null",exception.getMessage());
     }
 
     @Test
@@ -179,7 +186,9 @@ class CreditCardServiceImpTest {
         CreditCardResponseDTO responseDTO1 = new CreditCardResponseDTO(1L,"1234","VISA");
         CreditCardResponseDTO responseDTO2 = new CreditCardResponseDTO(2L,"5678","VISA");
         List<CreditCard> cards = Arrays.asList(cardSaved1,cardSaved2);
-        when(creditCardRepository.findCreditCardsByTypeCard(PageRequest.of(0,10),TypeCard.VISA)).thenReturn((Page<CreditCard>) cards);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<CreditCard> page = new PageImpl<>(cards, pageable, cards.size());
+        when(creditCardRepository.findCreditCardsByTypeCard(pageable,TypeCard.VISA)).thenReturn(page);
         when(creditCardDTOMapper.apply(any(CreditCard.class)))
                 .thenReturn(responseDTO1)
                 .thenReturn(responseDTO2);
@@ -209,9 +218,9 @@ class CreditCardServiceImpTest {
         Long id = 1L;
         when(creditCardRepository.existsById(id)).thenReturn(false);
         //Act
-        boolean result = creditCardServiceImp.remove(id);
+        CreditCardException exception = assertThrows(CreditCardException.class, ()->creditCardServiceImp.remove(id));
         //Assertion
-        Assertions.assertThat(result).isFalse();
+        assertEquals("CREDIT_CARD_EXCEPTION: The card fetched to delete doesn't exist",exception.getMessage());
         verify(creditCardRepository,never()).deleteById(id);
     }
 }

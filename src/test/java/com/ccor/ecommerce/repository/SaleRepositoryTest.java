@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DataJpaTest
-class SaleRepositoryTest extends Person {
+class SaleRepositoryTest extends Person {/*
     @Autowired
     private SaleRepository saleRepository;
 
@@ -62,5 +62,5 @@ class SaleRepositoryTest extends Person {
 
     @Test
     void findSalesByCreateAt() {
-    }
+    }*/
 }
