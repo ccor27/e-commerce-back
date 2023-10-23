@@ -18,7 +18,11 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -42,8 +46,7 @@ public class SecurityConfig {
     @Autowired
     private LogoutService logoutService;
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
+    private CustomOAuth2AuthenticationSuccessHandler customOAuth2AuthenticationSuccessHandler;
     private static final String[] adminUrls =
                         {
                                 "/api/v1/customer/{id}/remove",
@@ -90,7 +93,7 @@ public class SecurityConfig {
                          "/api/v1/sale/save",
                          "/api/v1/productStock/find/{id}",
                          "/api/v1/productStock/find/enable",
-                         "/api/v1/productStock//{id}/sell/{amount}",
+                         "/api/v1/productStock/{id}/sell/{amount}",
                          "/api/v1/customer/{id}/change/pwd/{pwd}",
                          "/api/v1/customer/find/by/tk/{token}",
                          "/api/v1/payment/save",
@@ -113,8 +116,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
 
-                .cors(AbstractHttpConfigurer::disable)// to get access from different url
-                .cors(Customizer.withDefaults())
+                //.cors(AbstractHttpConfigurer::disable)// to get access from different url
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth->{
                     auth
@@ -127,6 +130,10 @@ public class SecurityConfig {
                 .sessionManagement(sess->sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth->{
+                    oauth.successHandler(customOAuth2AuthenticationSuccessHandler);
+                    oauth.failureHandler(new SimpleUrlAuthenticationFailureHandler("/login?error=true"));
+                           })
                 .logout(logout->{
                    logout.logoutUrl("/api/v1/auth/logout")
                             .addLogoutHandler(logoutService)

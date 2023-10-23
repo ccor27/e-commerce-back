@@ -1,6 +1,8 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.model.Customer;
 import com.ccor.ecommerce.model.History;
+import com.ccor.ecommerce.model.Payment;
 import com.ccor.ecommerce.model.Sale;
 import com.ccor.ecommerce.model.dto.HistoryRequestDTO;
 import com.ccor.ecommerce.model.dto.HistoryResponseDTO;
@@ -19,7 +21,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
@@ -96,15 +100,17 @@ class HistoryServiceImpTest {
         History history1 = new History(1L,new ArrayList<>(),new Date(2023,07,14));
         History history2 = new History(1L,new ArrayList<>(),new Date(2023,07,14));
         List<History> expectedListHistory= new ArrayList<>(Arrays.asList(history1,history2));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<History> page = new PageImpl<>(expectedListHistory, pageable, expectedListHistory.size());
         HistoryResponseDTO expectedHistoryResponseDTO1 = new HistoryResponseDTO(1L, Collections.emptyList(),new Date(2023,07,14));
         HistoryResponseDTO expectedHistoryResponseDTO2 = new HistoryResponseDTO(2L, Collections.emptyList(),new Date(2023,07,14));
         List<HistoryResponseDTO> expectedListHistoryResponseDTO = new ArrayList<>(Arrays.asList(expectedHistoryResponseDTO1,expectedHistoryResponseDTO2));
-        when(historyRepository.findAll()).thenReturn(expectedListHistory);
+        when(historyRepository.findAll(pageable)).thenReturn(page);
         when(historyDTOMapper.apply(any(History.class)))
                 .thenReturn(expectedHistoryResponseDTO1)
                 .thenReturn(expectedHistoryResponseDTO2);
         //Act
-        List<HistoryResponseDTO> historyResponseDTOS = historyServiceImp.findAll();
+        List<HistoryResponseDTO> historyResponseDTOS = historyServiceImp.findAll(0,10);
         //Assertion
         assertNotNull(historyResponseDTOS);
         Assertions.assertThat(historyResponseDTOS).isEqualTo(expectedListHistoryResponseDTO);
@@ -113,18 +119,21 @@ class HistoryServiceImpTest {
     @Test
     void findSales() {
         //Arrange
-        Sale sale1 = new Sale(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
-        Sale sale2 = new Sale(2L,"concept",Collections.emptyList(),new Date(2023,07,14));
+        Sale sale1 = new Sale(1L,"concept",Collections.emptyList(),new Date(2023,07,14),new Payment());
+        Sale sale2 = new Sale(2L,"concept",Collections.emptyList(),new Date(2023,07,14),new Payment());
         List<Sale> sales = new ArrayList<>(Arrays.asList(sale1,sale2));
-        SaleResponseDTO expectedSaleResponseDTO1 = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
-        SaleResponseDTO expectedSaleResponseDTO2 = new SaleResponseDTO(2L,"concept",Collections.emptyList(),new Date(2023,07,14));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Sale> page = new PageImpl<>(sales, pageable, sales.size());
+        SaleResponseDTO expectedSaleResponseDTO1 = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14),1L);
+        SaleResponseDTO expectedSaleResponseDTO2 = new SaleResponseDTO(2L,"concept",Collections.emptyList(),new Date(2023,07,14),2L);
         List<SaleResponseDTO> expectedSalesResponseDTOS = new ArrayList<>(Arrays.asList(expectedSaleResponseDTO1,expectedSaleResponseDTO2));
         History history = History.builder()
                 .id(1L)
                 .sales(sales)
                 .modificationDate(new Date(2023,07,14))
                 .build();
-        when(historyRepository.findHistorySales(1L, PageRequest.of(0,10))).thenReturn((Page<Sale>) sales);
+//        when(historyRepository.save(any(History.class))).thenReturn(history);
+        when(historyRepository.findHistorySales(1L, pageable)).thenReturn(page);
         when(saleDTOMapper.apply(any(Sale.class)))
                 .thenReturn(expectedSaleResponseDTO1)
                 .thenReturn(expectedSaleResponseDTO2);
@@ -138,22 +147,23 @@ class HistoryServiceImpTest {
     @Test
     void addSale() {
         //Arrange
-        Sale sale1 = new Sale(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
-        Sale sale2 = new Sale(2L,"concept",Collections.emptyList(),new Date(2023,07,14));
-        List<Sale> sales = new ArrayList<>(Arrays.asList(sale1));
-        SaleResponseDTO expectedSaleResponseDTO1 = new SaleResponseDTO(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
-        SaleResponseDTO expectedSaleResponseDTO2 = new SaleResponseDTO(2L,"concept",Collections.emptyList(),new Date(2023,07,14));
-        List<SaleResponseDTO> expectedListSaleResponseDTO = new ArrayList<>(Arrays.asList(expectedSaleResponseDTO1,expectedSaleResponseDTO2));
+        Sale sale2 = new Sale(2L,"concept",Collections.emptyList(),new Date(2023,07,14),new Payment());
+        List<Sale> sales = new ArrayList<>(Arrays.asList(sale2));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Sale> page = new PageImpl<>(sales, pageable, sales.size());
+        SaleResponseDTO expectedSaleResponseDTO2 = new SaleResponseDTO(2L,"concept",Collections.emptyList(),new Date(2023,07,14),2L);
+        List<SaleResponseDTO> expectedListSaleResponseDTO = new ArrayList<>(Arrays.asList(expectedSaleResponseDTO2));
         History history = History.builder()
                 .id(1L)
-                .sales(sales)
+                .sales(new ArrayList<>())
                 .modificationDate(new Date(2023,07,14))
                 .build();
         when(historyRepository.save(any(History.class))).thenReturn(history);
         when(saleRepository.findById(2L)).thenReturn(Optional.ofNullable(sale2));
         when(historyRepository.findById(1L)).thenReturn(Optional.ofNullable(history));
+        when(historyRepository.findHistorySales(anyLong(), any(Pageable.class))).thenReturn(page);
+
         when(saleDTOMapper.apply(any(Sale.class)))
-                .thenReturn(expectedSaleResponseDTO1)
                 .thenReturn(expectedSaleResponseDTO2);
         //Act
         List<SaleResponseDTO> responseDTOS = historyServiceImp.addSale(expectedSaleResponseDTO2,1L);
@@ -165,7 +175,7 @@ class HistoryServiceImpTest {
     @Test
     void removeSale() {
         //Arrange
-        Sale sale1 = new Sale(1L,"concept",Collections.emptyList(),new Date(2023,07,14));
+        Sale sale1 = new Sale(1L,"concept",Collections.emptyList(),new Date(2023,07,14),new Payment());
         List<Sale> sales = new ArrayList<>(Arrays.asList(sale1));
         History history = History.builder()
                 .id(1L)

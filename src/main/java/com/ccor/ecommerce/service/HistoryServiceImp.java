@@ -99,7 +99,7 @@ public class HistoryServiceImp implements IHistoryService{
             history.setModificationDate(new Date());
             historyRepository.save(history);
             Page<Sale> list = historyRepository.findHistorySales(history.getId(), PageRequest.of(0,10));
-            return list.stream().map(s -> {
+            return list.getContent().stream().map(s -> {
                 return saleDTOMapper.apply(s);
             }).collect(Collectors.toList());
         }else{

@@ -78,21 +78,20 @@ public class CreditCardServiceImp implements ICreditCardService{
     @Override
     public List<CreditCardResponseDTO> findAll(Integer offset, Integer pageSize) {
         Page<CreditCard> cards = creditCardRepository.findAll(PageRequest.of(offset,pageSize));
-        if(cards!=null){
-            return cards.stream().map(creditCard -> {
+        if(cards!=null && !cards.isEmpty()){
+            return cards.getContent().stream().map(creditCard -> {
                 return dtoMapper.apply(creditCard);
             }).collect(Collectors.toList());
         }else{
             throw new CreditCardException("The list of card is null");
         }
-
     }
 
     @Override
     public List<CreditCardResponseDTO> findCardsByType(Integer offset, Integer pageSize,String type) {
         Page<CreditCard> cards = creditCardRepository.findCreditCardsByTypeCard(PageRequest.of(offset,pageSize),typeCard(type));
         if(cards!=null){
-            return cards.stream().map(creditCard -> {
+            return cards.getContent().stream().map(creditCard -> {
                 return dtoMapper.apply(creditCard);
             }).collect(Collectors.toList());
         }else{

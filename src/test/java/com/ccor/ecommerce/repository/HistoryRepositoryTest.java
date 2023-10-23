@@ -17,6 +17,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 class HistoryRepositoryTest extends Person {
+
     @Autowired
     private HistoryRepository historyRepository;
 
@@ -25,7 +26,10 @@ class HistoryRepositoryTest extends Person {
 
         ProductSold productSold1 = new ProductSold(null,"AHD26493874728","Computer",10,20000);
         ProductSold productSold2 = new ProductSold(null,"SDC26493801728","Tv",15,15000);
-        Sale sale = new Sale(null,"Things to home", Arrays.asList(productSold1,productSold2),new Date());
+        Sale sale = new Sale();
+        sale.setConcept("Things to home");
+        sale.setProductsSold(Arrays.asList(productSold1,productSold2));
+        sale.setCreateAt(new Date());
         History history = History.builder()
                 .sales(Arrays.asList(sale))
                 .modificationDate(new Date())

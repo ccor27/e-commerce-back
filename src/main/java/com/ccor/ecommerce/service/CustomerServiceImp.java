@@ -63,7 +63,16 @@ public class CustomerServiceImp implements ICustomerService{
         );
         tokenRepository.save(token);
     }
-
+    private void revokeAllCustomerTokens(Customer customer){
+        List<Token> validCustomerTokens = tokenRepository.findAllValidTokenByCustomer(customer.getId());
+        if(validCustomerTokens.isEmpty())
+            return;
+        validCustomerTokens.forEach(t->{
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+        tokenRepository.saveAll(validCustomerTokens);
+    }
     @Override
     public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO authenticationRequestDTO) {
         String username =authenticationRequestDTO.username();
@@ -89,23 +98,17 @@ public class CustomerServiceImp implements ICustomerService{
         }
     }
 
-    private void revokeAllCustomerTokens(Customer customer){
-        List<Token> validCustomerTokens = tokenRepository.findAllValidTokenByCustomer(customer.getId());
-        if(validCustomerTokens.isEmpty())
-            return;
-        validCustomerTokens.forEach(t->{
-            t.setExpired(true);
-            t.setRevoked(true);
-        });
-        tokenRepository.saveAll(validCustomerTokens);
-    }
     //TODO: search more information about remove customers when they are associated with sales
     @Override
     public boolean removeCustomer(Long id) {
         Customer customer = customerRepository.findById(id).orElse(null);
         if (customer!=null) {
-            customer.getTokens().forEach(token -> token.setCustomer(null));
-            customer.getConfirmationTokens().forEach(confirmationToken -> confirmationToken.setCustomer(null));
+            if(customer.getTokens()!=null){
+                customer.getTokens().forEach(token -> token.setCustomer(null));
+            }
+            if(customer.getConfirmationTokens()!=null){
+                customer.getConfirmationTokens().forEach(confirmationToken -> confirmationToken.setCustomer(null));
+            }
             customer.setHistory(null);
             customerRepository.delete(customer);
             return true;
@@ -141,8 +144,8 @@ public class CustomerServiceImp implements ICustomerService{
     @Override
     public List<CustomerResponseDTO> findAll(Integer offset, Integer pageSize) {
         Page<Customer> list = customerRepository.findAll(PageRequest.of(offset,pageSize));
-        if(list!=null){
-            return list.stream().map(customer -> {
+        if(list!=null && !list.isEmpty()){
+            return list.getContent().stream().map(customer -> {
                 return customerDTOMapper.apply(customer);
             }).collect(Collectors.toList());
         }else{
@@ -230,10 +233,11 @@ public class CustomerServiceImp implements ICustomerService{
                 customer.getAddress().add(a);
             }
             customerRepository.save(customer);
-            Page<Address> list = customerRepository.findCustomerAddress(customer.getId(), PageRequest.of(0,10));
-            return list.stream().map(address -> {
-                return addressDTOMapper.apply(address);
-            }).collect(Collectors.toList());
+            Page<Address> list = customerRepository.findCustomerAddress(id, PageRequest.of(0,10));
+                return list.getContent().stream().map(address -> {
+                    return addressDTOMapper.apply(address);
+                }).collect(Collectors.toList());
+
         }else{
             throw new CustomerException("The customer or the address to add doesn't exist");
         }

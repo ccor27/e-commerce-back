@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.model.History;
 import com.ccor.ecommerce.model.ProductSold;
 import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
 import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
@@ -15,7 +16,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,13 +130,15 @@ class ProductSoldServiceImpTest {
                 .amount(10)
                 .price(10.0)
                 .build();
-        List<ProductSold> list = new ArrayList<>(Arrays.asList(productSold1));
+        List<ProductSold> productSolds = new ArrayList<>(Arrays.asList(productSold1));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ProductSold> page = new PageImpl<>(productSolds, pageable, productSolds.size());
         ProductSoldResponseDTO expectedProductSoldResponseDTO = new ProductSoldResponseDTO(1L,"1as2","product",10,10.0);
         List<ProductSoldResponseDTO> expectedListProductSold = new ArrayList<>(Arrays.asList(expectedProductSoldResponseDTO));
-        when(productSoldRepository.findAll()).thenReturn(list);
+        when(productSoldRepository.findAll(pageable)).thenReturn(page);
         when(productSoldDTOMapper.apply(any(ProductSold.class))).thenReturn(expectedProductSoldResponseDTO);
         //Act
-        List<ProductSoldResponseDTO> productSoldResponseDTOS = productSoldServiceImp.findAll();
+        List<ProductSoldResponseDTO> productSoldResponseDTOS = productSoldServiceImp.findAll(0,10);
         //Assertion
         assertNotNull(productSoldResponseDTOS);
         Assertions.assertThat(productSoldResponseDTOS).isEqualTo(expectedListProductSold);
@@ -149,10 +154,12 @@ class ProductSoldServiceImpTest {
                 .amount(10)
                 .price(10.0)
                 .build();
-        List<ProductSold> list = new ArrayList<>(Arrays.asList(productSold1));
+        List<ProductSold> productSolds = new ArrayList<>(Arrays.asList(productSold1));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ProductSold> page = new PageImpl<>(productSolds, pageable, productSolds.size());
         ProductSoldResponseDTO expectedProductSoldResponseDTO = new ProductSoldResponseDTO(1L,"1as2","product",10,10.0);
         List<ProductSoldResponseDTO> expectedListProductSold = new ArrayList<>(Arrays.asList(expectedProductSoldResponseDTO));
-        when(productSoldRepository.findProductsSoldByBarCode("1as2", PageRequest.of(0,10))).thenReturn((Page<ProductSold>) list);
+        when(productSoldRepository.findProductsSoldByBarCode("1as2", pageable)).thenReturn(page);
         when(productSoldDTOMapper.apply(any(ProductSold.class))).thenReturn(expectedProductSoldResponseDTO);
         //Act
         List<ProductSoldResponseDTO> productSoldResponseDTOS = productSoldServiceImp.findProductsSoldByBarCode("1as2",0,10);

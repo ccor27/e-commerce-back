@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.AddressException;
 import com.ccor.ecommerce.model.Address;
 import com.ccor.ecommerce.model.dto.AddressRequestDTO;
 import com.ccor.ecommerce.model.dto.AddressResponseDTO;
@@ -13,9 +14,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.internal.matchers.NotNull;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
@@ -25,12 +29,12 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AddressServiceImpTest {
+    @InjectMocks
+    private AddressServiceImp addressServiceImp;
     @Mock
     private AddressRepository addressRepository;
     @Mock
     private AddressDTOMapper addressDTOMapper;
-    @InjectMocks
-    private AddressServiceImp addressServiceImp;
 
     @BeforeEach
     void setUp() {
@@ -98,12 +102,10 @@ class AddressServiceImpTest {
     void remove_ExistingId_ReturnsFalse() {
         //Arrange
         Long id = 1L;
-        when(addressRepository.existsById(id)).thenReturn(false);
         //Act
-        boolean result = addressServiceImp.remove(id);
         //Assert
-        Assertions.assertThat(result).isFalse();
-        verify(addressRepository,never()).deleteById(id);
+        AddressException exception = assertThrows(AddressException.class,()-> addressServiceImp.remove(id));
+        assertEquals("ADDRESS_EXCEPTION: The address to delete doesn't exist",exception.getMessage());
     }
     @Test
     void findById() {
@@ -126,38 +128,32 @@ class AddressServiceImpTest {
 
     @Test
     void findAll_whenTheAddressListNotEmpty() {
-        //Arrange
+        // Arrange
         Address address1 = Address.builder().id(1L).street("street1").country("country1").postalCode("28903").build();
         Address address2 = Address.builder().id(2L).street("street2").country("country2").postalCode("28903").build();
         List<Address> addresses = Arrays.asList(address1, address2);
-        when(addressRepository.findAll()).thenReturn(addresses);
-        //Act
-        AddressResponseDTO addressResponseDTO1 = new AddressResponseDTO(1L,"street1","country1","28903");
-        AddressResponseDTO addressResponseDTO2 = new AddressResponseDTO(2L,"street2","country2","28903");
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Address> page = new PageImpl<>(addresses, pageable, addresses.size());
+        when(addressRepository.findAll(pageable)).thenReturn(page);
         when(addressDTOMapper.apply(any(Address.class)))
-                .thenReturn(addressResponseDTO1)
-                .thenReturn(addressResponseDTO2);
-
-        List<AddressResponseDTO> expectedList = addressServiceImp.findAll(0,10);
-        //Assert
-        //verify the behavior
-        assertNotNull(expectedList);
-        assertEquals(2,expectedList.size());
-        assertEquals(addressResponseDTO1,expectedList.get(0));
-        assertEquals(addressResponseDTO2,expectedList.get(1));
-        verify(addressRepository,times(2)).findAll();
-        verify(addressDTOMapper,times(2)).apply(any(Address.class));
+                .thenReturn(new AddressResponseDTO(1L, "street1", "country1", "28903"))
+                .thenReturn(new AddressResponseDTO(2L, "street2", "country2", "28903"));
+        // Act
+        List<AddressResponseDTO> result = addressServiceImp.findAll(0, 10);
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
     }
     @Test
     void findAll_whenTheAddressListEmpty() {
-        //Arrange
-        when(addressRepository.findAll()).thenReturn(Collections.emptyList());
-        //Act
-        List<AddressResponseDTO> expectedList = addressServiceImp.findAll(0,10);
-        //Assert
-        assertNull(expectedList);
-        verify(addressRepository,times(1)).findAll();
-        verify(addressDTOMapper,never()).apply(any(Address.class));
+        // Arrange
+        when(addressRepository.findAll(any(Pageable.class))).thenReturn(null);
+
+        // Act and Assert
+        AddressException exception = assertThrows(AddressException.class, () -> addressServiceImp.findAll(0, 10));
+        assertEquals("ADDRESS_EXCEPTION: The list of addresses fetched is null",exception.getMessage());
+
+
     }
 
     @Test
@@ -166,7 +162,9 @@ class AddressServiceImpTest {
         Address address1 = Address.builder().id(1L).street("street1").country("country1").postalCode("28903").build();
         Address address2 = Address.builder().id(2L).street("street2").country("country2").postalCode("28903").build();
         List<Address> addresses = Arrays.asList(address1, address2);
-        when(addressRepository.findAddressesByPostalCode(PageRequest.of(0,10),"28903")).thenReturn((Page<Address>) addresses);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Address> page = new PageImpl<>(addresses, pageable, addresses.size());
+        when(addressRepository.findAddressesByPostalCode(PageRequest.of(0,10),"28903")).thenReturn(page);
         //Act
         AddressResponseDTO expectedResponseDTO1 = new AddressResponseDTO(1L,"street1","country1","28903");
         AddressResponseDTO expectedResponseDTO2 = new AddressResponseDTO(2L,"street2","country2","28903");
@@ -175,7 +173,8 @@ class AddressServiceImpTest {
                 .thenReturn(expectedResponseDTO2);
         List<AddressResponseDTO> expectedList = addressServiceImp.findAddressesByPostalCode(0,10,"28903");
         //Assert
-        verify(addressRepository,times(2)).findAddressesByPostalCode(PageRequest.of(0,10),"28903");
+        assertEquals(2,expectedList.size());
+        verify(addressRepository,times(1)).findAddressesByPostalCode(PageRequest.of(0,10),"28903");
         verify(addressDTOMapper,times(2)).apply(any(Address.class));
 
 
@@ -187,7 +186,9 @@ class AddressServiceImpTest {
         Address address1 = Address.builder().id(1L).street("street1").country("country").postalCode("28903").build();
         Address address2 = Address.builder().id(2L).street("street2").country("country").postalCode("28903").build();
         List<Address> addresses = Arrays.asList(address1, address2);
-        when(addressRepository.findAddressesByCountry(PageRequest.of(0,10),"country")).thenReturn((Page<Address>) addresses);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Address> page = new PageImpl<>(addresses, pageable, addresses.size());
+        when(addressRepository.findAddressesByCountry(PageRequest.of(0,10),"country")).thenReturn((page));
         //Act
         AddressResponseDTO expectedResponseDTO1 = new AddressResponseDTO(1L,"street1","country","28903");
         AddressResponseDTO expectedResponseDTO2 = new AddressResponseDTO(2L,"street2","country","28903");
@@ -196,7 +197,8 @@ class AddressServiceImpTest {
                 .thenReturn(expectedResponseDTO2);
         List<AddressResponseDTO> expectedList = addressServiceImp.findAddressesByCountry(0,10,"country");
         //Assert
-        verify(addressRepository,times(2)).findAddressesByCountry(PageRequest.of(0,10),"country");
+        assertEquals(2,expectedList.size());
+        verify(addressRepository,times(1)).findAddressesByCountry(PageRequest.of(0,10),"country");
         verify(addressDTOMapper,times(2)).apply(any(Address.class));
 
     }

@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.model.ProductSold;
 import com.ccor.ecommerce.model.ProductStock;
 import com.ccor.ecommerce.model.dto.ProductStockRequestDTO;
 import com.ccor.ecommerce.model.dto.ProductStockResponseDTO;
@@ -14,6 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,13 +119,15 @@ class ProductStockServiceImpTest {
                 .barCode("1as2")
                 .enableProduct(true)
                 .build();
-        List<ProductStock> list = new ArrayList<>(Arrays.asList(productStock));
+        List<ProductStock> productStocks = new ArrayList<>(Arrays.asList(productStock));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ProductStock> page = new PageImpl<>(productStocks, pageable, productStocks.size());
         ProductStockResponseDTO expectedProductStockResponseDTO = new ProductStockResponseDTO(1l,"product",10,10.0,"1as2",true);
         List<ProductStockResponseDTO> expectedList = new ArrayList<>(Arrays.asList(expectedProductStockResponseDTO));
-        when(productStockRepository.findProductStocksByEnableProduct()).thenReturn(list);
+        when(productStockRepository.findProductStocksByEnableProduct(pageable)).thenReturn(page);
         when(productStockDTOMapper.apply(any(ProductStock.class))).thenReturn(expectedProductStockResponseDTO);
         //Act
-        List<ProductStockResponseDTO> listProductsDTOS = productStockServiceImp.findProductStocksByEnableProduct();
+        List<ProductStockResponseDTO> listProductsDTOS = productStockServiceImp.findProductStocksByEnableProduct(0,10);
         //Assertion
         assertNotNull(listProductsDTOS);
         Assertions.assertThat(listProductsDTOS).isEqualTo(expectedList);
@@ -140,7 +147,7 @@ class ProductStockServiceImpTest {
         when(productStockRepository.findProductStockByBarCode("1as2")).thenReturn(Optional.ofNullable(productStock));
         when(productStockDTOMapper.apply(any(ProductStock.class))).thenReturn(expectedProductStockResponseDTO);
         //Act
-        ProductStockResponseDTO productDTOS = productStockServiceImp.findProductStocksByBarCode("1as2");
+        ProductStockResponseDTO productDTOS = productStockServiceImp.findProductStockByBarCode("1as2");
         //Assertion
         assertNotNull(expectedProductStockResponseDTO);
         Assertions.assertThat(productDTOS).isEqualTo(expectedProductStockResponseDTO);

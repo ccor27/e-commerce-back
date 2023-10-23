@@ -75,8 +75,8 @@ public class AddressServiceImp implements IAddressService {
     @Override
     public List<AddressResponseDTO> findAll(Integer offset,Integer pageSize) {
         Page<Address> list = addressRepository.findAll(PageRequest.of(offset,pageSize));
-        if(list!=null){
-            return addressRepository.findAll().stream().map(address -> {
+        if(list!=null && !list.isEmpty()){
+            return list.getContent().stream().map(address -> {
                 return addressDTOMapper.apply(address);
             }).collect(Collectors.toList());
         }else{
@@ -87,8 +87,8 @@ public class AddressServiceImp implements IAddressService {
     @Override
     public List<AddressResponseDTO> findAddressesByPostalCode(Integer offset,Integer pageSize,String postalCode) {
         Page<Address> list = addressRepository.findAddressesByPostalCode(PageRequest.of(offset,pageSize),postalCode);
-        if(list!=null){
-            return list
+        if(list!=null && !list.isEmpty()){
+            return list.getContent()
                     .stream().map(address -> {
                 return addressDTOMapper.apply(address);
             }).collect(Collectors.toList());

@@ -53,16 +53,6 @@ public class RegistrationServiceImp implements IRegistrationService{
                 customer.setUsername(requestDTO.username());
                 customer.setPwd(passwordEncoder.encode(requestDTO.pwd()));
                 customerRepository.save(customer);
-                /*String token = UUID.randomUUID().toString();
-                ConfirmationToken confirmationToken = ConfirmationToken.builder()
-                        .token(token)
-                        .createdAt(LocalDateTime.now())
-                        .expiresAt(LocalDateTime.now().plusMinutes(15))
-                        .customer(customer)
-                        .build();
-                confirmationTokenService.saveConfirmationToken(confirmationToken);
-                String link= "http://localhost:8080/api/v1/authentication/confirm?token="+token;
-                iEmailSender.send(customer.getEmail(),buildEmail(customer.getName(),link));*/
                 return new AuthenticationResponseDTO(resendConfirmationEmail(customer.getEmail())); //confirmation token
             }
 
