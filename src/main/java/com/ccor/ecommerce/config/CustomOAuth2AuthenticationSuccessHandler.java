@@ -48,12 +48,10 @@ public class CustomOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthentic
             Customer customer = customerRepository.
                     findCustomerByEmail(oauth2User.getAttribute("email").toString()).orElse(null);
             if(customer!=null){
-                System.out.println("customer exist");
                 String token = jwtService.generateToken(customer);
                 saveCustomerToken(customer,token);
                 response.getWriter().write(token);
                 response.getWriter().flush();
-
             }else{
                 //TODO: redirect a error endpoint because the customer doesn't exist or create new one
             }
