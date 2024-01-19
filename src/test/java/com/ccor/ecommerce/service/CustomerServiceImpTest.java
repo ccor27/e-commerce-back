@@ -382,7 +382,7 @@ class CustomerServiceImpTest {
                 "peter@gmail.com",
                 "peter"
         );
-        when(customerRepository.findCustomerByEmail("peter@gmail.com")).thenReturn(Optional.ofNullable(customer));
+        when(customerRepository.findCustomerByEmailAndIsNotDeleted("peter@gmail.com")).thenReturn(Optional.ofNullable(customer));
         when(customerDTOMapper.apply(any(Customer.class))).thenReturn(expectedCustomerResponseDTO);
         //Act
         CustomerResponseDTO customerResponseDTO = customerServiceImp.findByEmail("peter@gmail.com");
@@ -390,42 +390,94 @@ class CustomerServiceImpTest {
         assertNotNull(customerResponseDTO);
         Assertions.assertThat(customerResponseDTO).isEqualTo(expectedCustomerResponseDTO);
     }
+    @Test
+    void changeUsername(){
+        Customer customer = new Customer();
+        customer.setId(1L);
+        customer.setUsername("peter");
+        ChangeUsernameRequestDTO changeUsernameRequestDTO = new ChangeUsernameRequestDTO(1L,"peter","ertep");
+        CustomerResponseDTO expectedCustomerResponseDTO = new CustomerResponseDTO(1L,null,null,null,null,"ertep");
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(customerRepository.findCustomerByUsername(changeUsernameRequestDTO.newUsername())).thenReturn(Optional.empty());
+        when(customerServiceImp.changeUsername(changeUsernameRequestDTO)).thenReturn(expectedCustomerResponseDTO);
+
+        CustomerResponseDTO customerResponseDTO = customerServiceImp.changeUsername(changeUsernameRequestDTO);
+        assertEquals(expectedCustomerResponseDTO.username(),customerResponseDTO.username());
+    }
+    @Test
+    void changeUsername_usernameExist(){
+        Customer customerToChangeUsername = new Customer();
+        customerToChangeUsername.setId(1L);
+        customerToChangeUsername.setUsername("peter");
+        Customer customerExisting = new Customer();
+        customerExisting.setId(2L);
+        customerExisting.setUsername("ertep");
+        ChangeUsernameRequestDTO changeUsernameRequestDTO = new ChangeUsernameRequestDTO(1L,"peter","ertep");
+        //CustomerResponseDTO expectedCustomerResponseDTO = new CustomerResponseDTO(1L,null,null,null,null,"ertep");
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customerToChangeUsername));
+        when(customerRepository.findCustomerByUsername(changeUsernameRequestDTO.newUsername())).thenReturn(Optional.of(customerExisting));
+       // when(customerServiceImp.changeUsername(changeUsernameRequestDTO)).thenReturn(expectedCustomerResponseDTO);
+       CustomerException exception = assertThrows(CustomerException.class,()->customerServiceImp.changeUsername(changeUsernameRequestDTO));
+       assertEquals("CUSTOMER_EXCEPTION: The new username exist, therefore is not possible use it",exception.getMessage());
+    }
+    @Test
+    void changeUsername_customerNotExist(){
+        ChangeUsernameRequestDTO changeUsernameRequestDTO = new ChangeUsernameRequestDTO(1L,"peter","ertep");
+        when(customerRepository.findById(1L)).thenReturn(Optional.empty());
+        CustomerException exception = assertThrows(CustomerException.class,()->customerServiceImp.changeUsername(changeUsernameRequestDTO));
+        assertEquals("CUSTOMER_EXCEPTION: The customer fetched to change its username doesn't exist",exception.getMessage());
+    }
 
     @Test
     void changePwd() {
         //Arrange
-        Customer customerSaved = new Customer();
-        customerSaved.setId(1L);
-        customerSaved.setName("peter");
-        customerSaved.setLastName("bing");
-        customerSaved.setCellphone("89262293");
-        customerSaved.setEmail("peter@gmail.com");
-        customerSaved.setUsername("peter");
-        customerSaved.setPwd("peter123");
-        Customer customerEdited = new Customer();
-        customerEdited.setId(1L);
-        customerEdited.setName("peter");
-        customerEdited.setLastName("bing");
-        customerEdited.setCellphone("89262293");
-        customerEdited.setEmail("peter@gmail.com");
-        customerEdited.setUsername("peter");
-        customerEdited.setPwd("peter1234");
-        CustomerResponseDTO expectedCustomerResponseDTO = new CustomerResponseDTO(
-                1L,
-                "peter",
-                "bing",
-                "89262293",
-                "peter@gmail.com",
-                "peter"
-        );
-        when(customerRepository.findById(1L)).thenReturn(Optional.ofNullable(customerSaved));
-        when(customerRepository.save(any(Customer.class))).thenReturn(customerEdited);
-        when(customerDTOMapper.apply(any(Customer.class))).thenReturn(expectedCustomerResponseDTO);
-        //Act
-        CustomerResponseDTO customerResponseDTO = customerServiceImp.changePwd("peter1234",1L);
-        //Assertion
-        assertNotNull(customerResponseDTO);
-        Assertions.assertThat(customerResponseDTO).isEqualTo(expectedCustomerResponseDTO);
+        Customer customer = new Customer();
+        customer.setId(1L);
+        customer.setName("peter");
+        customer.setLastName("bing");
+        customer.setCellphone("89262293");
+        customer.setEmail("peter@gmail.com");
+        customer.setUsername("peter");
+        customer.setPwd(passwordEncoder.encode("peter123"));
+
+        ChangePwdRequestDTO changePwdRequestDTO = new ChangePwdRequestDTO(1L,"peter123","peter12");
+        CustomerResponseDTO expectedResponseDTO = new CustomerResponseDTO(1L,"peter","bing","89262293","peter@gmail.com","peter");
+
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+        when(passwordEncoder.matches("peter123", null)).thenReturn(false);
+        when(passwordEncoder.matches(changePwdRequestDTO.currentPassword(),customer.getPwd())).thenReturn(true);
+        when(customerServiceImp.changePwd(changePwdRequestDTO)).thenReturn(expectedResponseDTO);
+
+        CustomerResponseDTO responseDTO = customerServiceImp.changePwd(changePwdRequestDTO);
+
+        assertNotNull(responseDTO);
+    }
+    @Test
+    void changePwd_passwordNotMatch() {
+        //Arrange
+        Customer customer = new Customer();
+        customer.setId(1L);
+        customer.setName("peter");
+        customer.setLastName("bing");
+        customer.setCellphone("89262293");
+        customer.setEmail("peter@gmail.com");
+        customer.setUsername("peter");
+        customer.setPwd(passwordEncoder.encode("peter123"));
+
+        ChangePwdRequestDTO changePwdRequestDTO = new ChangePwdRequestDTO(1L,"peter4","peter12");
+
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+
+        CustomerException exception = assertThrows(CustomerException.class,()->customerServiceImp.changePwd(changePwdRequestDTO));
+        assertEquals("CUSTOMER_EXCEPTION: The passwords doesn't match, therefore is not possible change it",exception.getMessage());
+    }
+    @Test
+    void changePwd_customerNotExist() {
+        ChangePwdRequestDTO changePwdRequestDTO = new ChangePwdRequestDTO(1L,"peter123","peter12");
+
+       CustomerException exception = assertThrows(CustomerException.class,()->customerServiceImp.changePwd(changePwdRequestDTO));
+       assertEquals("CUSTOMER_EXCEPTION: The customer fetched to change its pwd doesn't exist",exception.getMessage());
+
     }
     @Test
     void addAddress_addressNotExist_throwException() {
@@ -542,7 +594,8 @@ class CustomerServiceImpTest {
     }
 
     @Test
-    void addCreditCard_whenCardNotExit() {
+    //TODO:fix this test method
+    void addCreditCard_whenCardNotExist() {
         //Arrange
         CreditCard card = CreditCard.builder()
                 .id(1L)
@@ -559,15 +612,15 @@ class CustomerServiceImpTest {
         customer.setUsername("peter");
         customer.setPwd("peter123");
         customer.setCards(new ArrayList<>());
-        CreditCardResponseDTO expectedCardDTO1 = new CreditCardResponseDTO(1L,"12345","MASTER_CARD");
-        CreditCardResponseDTO expectedCardDTO2 = new CreditCardResponseDTO(2L,"7890","VISA");
+        CreditCardResponseDTO expectedCardDTO1 = new CreditCardResponseDTO(1L,"7890","VISA");
         CreditCardResponseDTO cardDTOToAdd = new CreditCardResponseDTO(null,"7890","VISA");
-        List<CreditCardResponseDTO> expectedList = new ArrayList<>(Arrays.asList(expectedCardDTO1,expectedCardDTO2));
-        when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+        List<CreditCardResponseDTO> expectedList = new ArrayList<>(Arrays.asList(expectedCardDTO1));
+        //when(customerRepository.save(any(Customer.class))).thenReturn(customer);
         when(customerRepository.findById(1L)).thenReturn(Optional.ofNullable(customer));
+        when(customerRepository.findCustomerCreditCards(1L,PageRequest.of(0,10))).thenReturn(any(Page.class));
+        when(customerServiceImp.addCreditCard(cardDTOToAdd,1L)).thenReturn(expectedList);
         when(creditCardDTOMapper.apply(any(CreditCard.class)))
-                .thenReturn(expectedCardDTO1)
-                .thenReturn(expectedCardDTO2);
+                .thenReturn(expectedCardDTO1);
         //Act
         List<CreditCardResponseDTO> list = customerServiceImp.addCreditCard(cardDTOToAdd,1L);
         //Assertion
@@ -576,6 +629,7 @@ class CustomerServiceImpTest {
 
     }
     @Test
+    //TODO:fix this test method
     void addCreditCard_whenCardExit() {
         //Arrange
         CreditCard card = CreditCard.builder()

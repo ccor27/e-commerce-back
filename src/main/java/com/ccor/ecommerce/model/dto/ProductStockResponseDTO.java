@@ -4,8 +4,9 @@ public record ProductStockResponseDTO(
         Long id,
         String name,
         int amount,
-        double pricePerUnit,
+        int pricePerUnit,
         String barCode,
-        boolean enableProduct
+        boolean enableProduct,
+        String picturePath
 ) {
 }

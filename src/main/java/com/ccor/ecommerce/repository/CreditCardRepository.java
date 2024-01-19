@@ -17,4 +17,7 @@ public interface CreditCardRepository extends JpaRepository<CreditCard,Long> {
     @Query("SELECT c FROM CreditCard c WHERE c.typeCard =:typeCard")
     Page<CreditCard> findCreditCardsByTypeCard(Pageable pageable, @Param("typeCard") TypeCard typeCard);
     Optional<CreditCard> findCreditCardByNumber(String number);
+    @Query("SELECT COUNT(*) FROM CreditCard")
+    int countCreditCards();
+
 }

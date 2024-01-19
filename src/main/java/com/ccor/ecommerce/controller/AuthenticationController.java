@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.controller;
 
+import com.ccor.ecommerce.exceptions.CustomerException;
 import com.ccor.ecommerce.model.Customer;
 import com.ccor.ecommerce.model.dto.AuthenticationRequestDTO;
 import com.ccor.ecommerce.model.dto.AuthenticationResponseDTO;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
@@ -32,13 +35,16 @@ public class AuthenticationController {
     private ICustomerService iCustomerService;
     @Autowired
     private IRegistrationService iRegistrationService;
-    @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody CustomerRequestDTO requestDTO) throws IllegalAccessException {
-        AuthenticationResponseDTO authenticationResponseDTO = iRegistrationService.save(requestDTO);
-        if(authenticationResponseDTO!=null){
+    @PostMapping(value = "/save",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> save(@RequestPart("requestDTO") CustomerRequestDTO requestDTO,
+                                  @RequestPart("picture") MultipartFile picture)  {
+        try{
+            AuthenticationResponseDTO authenticationResponseDTO = iRegistrationService.save(requestDTO,picture);
             return new ResponseEntity<>(authenticationResponseDTO, HttpStatus.CREATED);
-        }else{
+        }catch (CustomerException ex){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
    @PostMapping("/authenticate")

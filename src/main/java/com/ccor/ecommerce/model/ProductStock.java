@@ -19,8 +19,10 @@ public class ProductStock {
     private Long id;
     @Column(unique = true)
     private String name;
+    @Lob
+    private String picturePath;
     private int amount;
-    private double pricePerUnit;
+    private int pricePerUnit;
     @Column(unique = true)
     private String barCode;
     private boolean enableProduct;

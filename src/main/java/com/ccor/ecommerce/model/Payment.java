@@ -18,13 +18,13 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String idStripePayment;
     @Enumerated(EnumType.STRING)
     private StatusPayment statusPayment;
     private Date createAt;
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    private boolean isDeleted;
     @ManyToOne
     @JoinColumn(name = "credit_card_id")
     private CreditCard card;
+    private int totalPrice;
 }

@@ -14,23 +14,15 @@ public class PaymentDTOMapper implements Function<Payment, PaymentResponseDTO> {
     public PaymentResponseDTO apply(Payment payment) {
         return new PaymentResponseDTO(
                 payment.getId(),
+                payment.getIdStripePayment(),
                 payment.getStatusPayment().name(),
                 payment.getCreateAt(),
-                existCustomer(payment),
-                existCard(payment)
+                existCard(payment),
+                payment.getTotalPrice()
         );
-    }
-    private Long existCustomer(Payment payment){
-        Customer customer = payment.getCustomer();
-        return customer!=null ? customer.getId() : null;
     }
     private Long existCard(Payment payment){
         CreditCard card = payment.getCard();
         return card!=null ? card.getId() : null;
     }
-    /*private Long existSale(Payment payment){
-        Sale sale = payment.getSale();
-        System.out.println("payment's sale: "+sale.getId() +" "+sale.getConcept());
-        return sale!=null ? sale.getId() : null;
-    }*/
 }

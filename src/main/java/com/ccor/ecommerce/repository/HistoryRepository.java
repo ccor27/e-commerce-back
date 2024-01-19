@@ -15,5 +15,7 @@ import java.util.List;
 public interface HistoryRepository extends JpaRepository<History,Long> {
     @Query("SELECT h.sales FROM History h WHERE h.id= :historyId")
     Page<Sale> findHistorySales(@Param("historyId")Long id, Pageable pageable);
+    @Query("SELECT COUNT(*) FROM History ")
+    int countHistory();
     
 }

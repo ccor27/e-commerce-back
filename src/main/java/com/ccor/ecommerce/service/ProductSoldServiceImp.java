@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.AddressException;
 import com.ccor.ecommerce.exceptions.ProductSoldException;
 import com.ccor.ecommerce.model.ProductSold;
 import com.ccor.ecommerce.model.dto.ProductSoldRequestDTO;
@@ -34,32 +35,6 @@ public class ProductSoldServiceImp implements IProductSoldService{
             throw new ProductSoldException("The request to save is null");
         }
     }
-
-    @Override
-    public ProductSoldResponseDTO edit(ProductSoldRequestDTO productSoldRequestDTO, Long id) {
-        ProductSold sold = productSoldRepository.findById(id).orElse(null);
-        if(sold!=null){
-            sold.setName(productSoldRequestDTO.name());
-            sold.setBarCode(productSoldRequestDTO.barCode());
-            sold.setAmount(productSoldRequestDTO.amount());
-            sold.setPrice(productSoldRequestDTO.price());
-            return productSoldDTOMapper.apply(productSoldRepository.save(sold));
-        }else{
-           throw new ProductSoldException("The product sold to updates doesn't exist");
-        }
-
-    }
-
-    @Override
-    public boolean remove(Long id) {
-        if(productSoldRepository.existsById(id)){
-            productSoldRepository.deleteById(id);
-            return true;
-        }else{
-            throw new ProductSoldException("The product sold fetched to delete doesn't exist");
-        }
-    }
-
     @Override
     public ProductSoldResponseDTO findById(Long id) {
         ProductSold productSold = productSoldRepository.findById(id).orElse(null);
@@ -73,13 +48,32 @@ public class ProductSoldServiceImp implements IProductSoldService{
     @Override
     public List<ProductSoldResponseDTO> findAll(Integer offset, Integer pageSize) {
         Page<ProductSold> list = productSoldRepository.findAll(PageRequest.of(offset,pageSize));
-        if(list!=null){
-          return list.stream().map(productSold -> {
-              return productSoldDTOMapper.apply(productSold);
-          }).collect(Collectors.toList());
+        if(list!=null && !list.isEmpty()){
+
+            int totalHistory = productSoldRepository.countProductsSold();
+            int adjustedOffset = pageSize*offset;
+            adjustedOffset = Math.min(adjustedOffset,totalHistory);
+            if(adjustedOffset>=totalHistory){
+                throw new AddressException("There aren't the enough products");
+            }else {
+                return list.stream().map(productSold -> {
+                    return productSoldDTOMapper.apply(productSold);
+                }).collect(Collectors.toList());
+            }
+
         }else{
             throw new ProductSoldException("The list of products sold is null");
         }
+    }
+
+    @Override
+    public List<ProductSold> findAllToExport(Integer offset, Integer pageSize) {
+        return productSoldRepository.findAll(PageRequest.of(offset,pageSize)).getContent();
+    }
+
+    @Override
+    public List<ProductSold> findAllToExport() {
+        return productSoldRepository.findAll();
     }
 
     @Override

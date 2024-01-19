@@ -3,6 +3,7 @@ package com.ccor.ecommerce.service.mapper;
 import com.ccor.ecommerce.model.Payment;
 import com.ccor.ecommerce.model.ProductSold;
 import com.ccor.ecommerce.model.Sale;
+import com.ccor.ecommerce.model.dto.PaymentResponseDTO;
 import com.ccor.ecommerce.model.dto.ProductSoldResponseDTO;
 import com.ccor.ecommerce.model.dto.SaleResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
 public class SaleDTOMapper implements Function<Sale, SaleResponseDTO> {
     @Autowired
     private ProductSoldDTOMapper productSoldDTOMapper;
+    @Autowired
+    private PaymentDTOMapper paymentDTOMapper;
     @Override
     public SaleResponseDTO apply(Sale sale) {
         return new SaleResponseDTO(
@@ -26,8 +29,12 @@ public class SaleDTOMapper implements Function<Sale, SaleResponseDTO> {
                 existPayment(sale.getPayment())
         );
     }
-    private Long existPayment(Payment payment){
-        return payment!=null ? payment.getId() : null;
+    private PaymentResponseDTO existPayment(Payment payment){
+        if(payment!=null){
+            return paymentDTOMapper.apply(payment);
+        }else{
+            return null;
+        }
     }
     private List<ProductSoldResponseDTO> productSoldResponseDTOS(List<ProductSold> list) {
         if (list != null || list.size() > 0) {

@@ -15,7 +15,8 @@ public class ProductStockDTOMapper implements Function<ProductStock, ProductStoc
                 productStock.getAmount(),
                 productStock.getPricePerUnit(),
                 productStock.getBarCode(),
-                productStock.isEnableProduct()
+                productStock.isEnableProduct(),
+                productStock.getPicturePath()
         );
     }
 }

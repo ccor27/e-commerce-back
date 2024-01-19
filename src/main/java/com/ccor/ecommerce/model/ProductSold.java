@@ -20,5 +20,5 @@ public class ProductSold {
     private String barCode;
     private String name;
     private int amount;
-    private double price;
+    private int price;
 }

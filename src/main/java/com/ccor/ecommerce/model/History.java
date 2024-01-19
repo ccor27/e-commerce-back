@@ -17,8 +17,11 @@ public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String customerFullName;
     @OneToMany
-    @JoinColumn(name = "sale_id")
+    @JoinTable(name = "history_sale")
+    //@JoinColumn(name = "history_id")
     private List<Sale> sales;
     private Date modificationDate;
+
 }

@@ -1,6 +1,8 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.AddressException;
 import com.ccor.ecommerce.exceptions.HistoryException;
+import com.ccor.ecommerce.model.Address;
 import com.ccor.ecommerce.model.History;
 import com.ccor.ecommerce.model.Sale;
 import com.ccor.ecommerce.model.dto.HistoryRequestDTO;
@@ -36,6 +38,8 @@ public class HistoryServiceImp implements IHistoryService{
     public HistoryResponseDTO save(HistoryRequestDTO historyRequestDTO) {
         if(historyRequestDTO!=null){
             History history = new History().builder()
+                    //.id(null)
+                    .customerFullName("")
                     .sales(new ArrayList<>())
                     .modificationDate(historyRequestDTO.dateModification())
                     .build();
@@ -68,13 +72,31 @@ public class HistoryServiceImp implements IHistoryService{
     @Override
     public List<HistoryResponseDTO> findAll(Integer offset, Integer pageSize) {
         Page<History> list = historyRepository.findAll(PageRequest.of(offset,pageSize));
-        if(list!=null){
-            return list.stream().map(history -> {
-                return historyDTOMapper.apply(history);
-            }).collect(Collectors.toList());
+        if(list!=null && !list.isEmpty()){
+
+            int totalProducts = historyRepository.countHistory();
+            int adjustedOffset = pageSize*offset;
+            adjustedOffset = Math.min(adjustedOffset,totalProducts);
+            if(adjustedOffset>=totalProducts){
+                throw new AddressException("There aren't the enough histories");
+            }else {
+                return list.stream().map(history -> {
+                    return historyDTOMapper.apply(history);
+                }).collect(Collectors.toList());
+            }
         }else{
             throw new HistoryException("The list of histories is null");
         }
+    }
+
+    @Override
+    public List<History> findAllToExport(Integer offset, Integer pageSize) {
+        return historyRepository.findAll(PageRequest.of(offset,pageSize)).getContent();
+    }
+
+    @Override
+    public List<History> findAllToExport() {
+        return historyRepository.findAll();
     }
 
     @Override
@@ -89,24 +111,6 @@ public class HistoryServiceImp implements IHistoryService{
         }
     }
     //TODO: this method return a pageable with 10 elements in the 0 page
-    @Override
-    @Transactional
-    public List<SaleResponseDTO> addSale(SaleResponseDTO saleResponseDTO, Long id) {
-        History history = historyRepository.findById(id).orElse(null);
-        Sale sale = saleRepository.findById(saleResponseDTO.id()).orElse(null);
-        if(history!=null && sale!=null){
-            history.getSales().add(sale);
-            history.setModificationDate(new Date());
-            historyRepository.save(history);
-            Page<Sale> list = historyRepository.findHistorySales(history.getId(), PageRequest.of(0,10));
-            return list.getContent().stream().map(s -> {
-                return saleDTOMapper.apply(s);
-            }).collect(Collectors.toList());
-        }else{
-            throw new HistoryException("The history fetched or the sale to add doesn't exist");
-        }
-
-    }
 
     @Override
     @Transactional

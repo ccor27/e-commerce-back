@@ -4,6 +4,6 @@ public record ProductSoldRequestDTO(
         String barCode,
         String name,
         int amount,
-        double price
+        int price
 ) {
 }
