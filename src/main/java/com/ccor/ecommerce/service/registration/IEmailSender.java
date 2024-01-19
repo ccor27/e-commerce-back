@@ -1,5 +1,7 @@
 package com.ccor.ecommerce.service.registration;
 
 public interface IEmailSender {
-    void send(String to, String email);
+    void sendEmail(String to, String email, String title);
+
+
 }

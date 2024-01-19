@@ -1,22 +1,32 @@
 package com.ccor.ecommerce.controller;
 
 import com.ccor.ecommerce.exceptions.AddressException;
-import com.ccor.ecommerce.exceptions.ProductStockException;
+import com.ccor.ecommerce.model.Address;
+import com.ccor.ecommerce.model.dto.AddressEditRequestDTO;
 import com.ccor.ecommerce.model.dto.AddressRequestDTO;
 import com.ccor.ecommerce.model.dto.AddressResponseDTO;
 import com.ccor.ecommerce.service.IAddressService;
+import com.ccor.ecommerce.service.export.excel.IExportExcelService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 @RestController
 @RequestMapping("/api/v1/address")
 public class AddressController {
     @Autowired
     private IAddressService iAddressService;
+    @Qualifier("address")
+    @Autowired
+    private IExportExcelService iExportExcelService;
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody AddressRequestDTO addressRequestDTO){
         try {
@@ -27,7 +37,7 @@ public class AddressController {
         }
     }
     @PostMapping("/{id}/edit")
-    public ResponseEntity<?> edit(@RequestBody AddressRequestDTO addressRequestDTO, @PathVariable("id") Long id){
+    public ResponseEntity<?> edit(@RequestBody AddressEditRequestDTO addressRequestDTO, @PathVariable("id") Long id){
          try {
              AddressResponseDTO addressResponseDTO = iAddressService.edit(addressRequestDTO,id);
              return new ResponseEntity<>(addressResponseDTO, HttpStatus.CREATED);
@@ -110,5 +120,29 @@ public class AddressController {
         }catch (AddressException ex){
             return new ResponseEntity<>(ex,HttpStatus.NOT_FOUND);
         }
+    }
+    @GetMapping("/export/all")
+    public void exportIntoExcelFile(HttpServletResponse response) throws IOException {
+        response.setContentType("application/octet-stream");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(new Date());
+
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=customer" + currentDateTime + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+        List<Address> addresses = iAddressService.findAllToExport();
+        iExportExcelService.generateExcelFile(response,addresses);
+    }
+    @GetMapping("/export/all/{offset}/{pageSize}")
+    public void exportIntoExcelFile(HttpServletResponse response, @PathVariable Integer offset, @PathVariable Integer pageSize) throws IOException {
+        response.setContentType("application/octet-stream");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(new Date());
+
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=customer" + currentDateTime + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+        List<Address> addresses = iAddressService.findAllToExport(offset,pageSize);
+        iExportExcelService.generateExcelFile(response,addresses);
     }
 }

@@ -14,4 +14,6 @@ import java.util.List;
 public interface ProductSoldRepository extends JpaRepository<ProductSold,Long> {
     @Query("SELECT p FROM ProductSold p WHERE p.barCode=:barCode ")
     Page<ProductSold> findProductsSoldByBarCode(@Param("barCode") String barcode, Pageable pageable);
+    @Query("SELECT COUNT(*) FROM ProductSold ")
+    int countProductsSold();
 }

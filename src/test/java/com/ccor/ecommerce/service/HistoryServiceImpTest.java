@@ -1,6 +1,5 @@
 package com.ccor.ecommerce.service;
 
-import com.ccor.ecommerce.model.Customer;
 import com.ccor.ecommerce.model.History;
 import com.ccor.ecommerce.model.Payment;
 import com.ccor.ecommerce.model.Sale;
@@ -166,7 +165,7 @@ class HistoryServiceImpTest {
         when(saleDTOMapper.apply(any(Sale.class)))
                 .thenReturn(expectedSaleResponseDTO2);
         //Act
-        List<SaleResponseDTO> responseDTOS = historyServiceImp.addSale(expectedSaleResponseDTO2,1L);
+        List<SaleResponseDTO> responseDTOS = historyServiceImp.addExistingSale(expectedSaleResponseDTO2,1L);
         //Assertions
         assertNotNull(responseDTOS);
         Assertions.assertThat(responseDTOS).isEqualTo(expectedListSaleResponseDTO);

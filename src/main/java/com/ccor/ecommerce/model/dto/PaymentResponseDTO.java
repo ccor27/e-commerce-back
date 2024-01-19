@@ -4,10 +4,11 @@ import java.util.Date;
 
 public record PaymentResponseDTO(
         Long id,
+        String paymentIntent,
         String statusPayment,
         Date createAt,
-        Long customerId,
-        Long creditCardId
+        Long creditCardId,
+        int totalPrice
 
 ) {
 }

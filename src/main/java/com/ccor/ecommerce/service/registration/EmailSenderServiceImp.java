@@ -14,17 +14,18 @@ public class EmailSenderServiceImp implements IEmailSender{
     private JavaMailSender javaMailSender;
     @Override
     @Async
-    public void send(String to, String email) {
+    public void sendEmail(String to, String email, String title) {
         try {
             MimeMessage mimeMailMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMailMessage,"utf-8");
             helper.setText(email,true);
             helper.setTo(to);
-            helper.setSubject("Confirm your email");
+            helper.setSubject(title);
             helper.setFrom("Store@gmail.com");
             javaMailSender.send(mimeMailMessage);
         }catch (MessagingException e){
             throw new IllegalStateException("Failed to send the email");
         }
     }
+
 }

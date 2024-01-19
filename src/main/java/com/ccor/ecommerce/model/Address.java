@@ -14,12 +14,13 @@ import lombok.*;
 @ToString
 @Entity
 @EqualsAndHashCode
-public class Address {
+public class    Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String street;
     private String country;
     private String postalCode;
+
 
 }

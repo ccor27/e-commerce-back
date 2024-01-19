@@ -1,6 +1,7 @@
 package com.ccor.ecommerce.controller;
 
 import com.ccor.ecommerce.exceptions.CreditCardException;
+import com.ccor.ecommerce.model.dto.CreditCardEditRequestDTO;
 import com.ccor.ecommerce.model.dto.CreditCardRequestDTO;
 import com.ccor.ecommerce.model.dto.CreditCardResponseDTO;
 import com.ccor.ecommerce.service.ICreditCardService;
@@ -26,7 +27,7 @@ public class CreditCardController {
         }
     }
     @PostMapping("/{id}/edit")
-    public ResponseEntity<?> edit(@RequestBody CreditCardRequestDTO requestDTO, @PathVariable("id") Long id){
+    public ResponseEntity<?> edit(@RequestBody CreditCardEditRequestDTO requestDTO, @PathVariable("id") Long id){
            try{
                CreditCardResponseDTO responseDTO = iCreditCardService.edit(requestDTO,id);
                return new ResponseEntity<>(responseDTO, HttpStatus.OK);
@@ -55,9 +56,9 @@ public class CreditCardController {
         }
     }
     @GetMapping("/find")
-    public ResponseEntity<?> findAllByDefault(@PathVariable Integer offset, @PathVariable Integer pageSize){
+    public ResponseEntity<?> findAllByDefault(){
         try {
-            List<CreditCardResponseDTO> list = iCreditCardService.findAll(offset, pageSize);
+            List<CreditCardResponseDTO> list = iCreditCardService.findAll(0, 10);
             return new ResponseEntity<>(list,HttpStatus.FOUND);
         }catch (CreditCardException ex){
             return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);

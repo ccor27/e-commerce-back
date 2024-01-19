@@ -21,6 +21,7 @@ public class Sale {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String concept;
+    private boolean isDeleted;
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "sale_products")
     private List<ProductSold> productsSold;

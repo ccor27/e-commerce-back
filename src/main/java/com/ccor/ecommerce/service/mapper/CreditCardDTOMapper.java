@@ -12,7 +12,10 @@ public class CreditCardDTOMapper implements Function<CreditCard, CreditCardRespo
         return new CreditCardResponseDTO(
                 creditCard.getId(),
                 creditCard.getNumber(),
-                String.valueOf(creditCard.getTypeCard())
+                String.valueOf(creditCard.getTypeCard()),
+                creditCard.getMonthExp(),
+                creditCard.getYearExp(),
+                creditCard.getCvv()
         );
     }
 }

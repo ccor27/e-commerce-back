@@ -78,8 +78,8 @@ class CustomerRepositoryTest {
 
     @Test
     void findCustomerByEmail() {
-        assertTrue(customerRepository.findCustomerByEmail("peter@gmail.com").isPresent());
-        assertFalse(customerRepository.findCustomerByEmail("petr@gmail.com").isPresent());
+        assertTrue(customerRepository.findCustomerByEmailAndIsNotDeleted("peter@gmail.com").isPresent());
+        assertFalse(customerRepository.findCustomerByEmailAndIsNotDeleted("petr@gmail.com").isPresent());
     }
 
     @Test

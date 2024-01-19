@@ -1,19 +1,21 @@
 package com.ccor.ecommerce.service.registration;
 
-import com.ccor.ecommerce.model.ConfirmationToken;
-import com.ccor.ecommerce.model.Customer;
-import com.ccor.ecommerce.model.History;
-import com.ccor.ecommerce.model.Role;
+import com.ccor.ecommerce.exceptions.CustomerException;
+import com.ccor.ecommerce.model.*;
 import com.ccor.ecommerce.model.dto.AuthenticationResponseDTO;
 import com.ccor.ecommerce.model.dto.CustomerRequestDTO;
 import com.ccor.ecommerce.repository.CustomerRepository;
+import com.ccor.ecommerce.service.INotificationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RegistrationServiceImp implements IRegistrationService{
@@ -28,11 +30,13 @@ public class RegistrationServiceImp implements IRegistrationService{
     private PasswordEncoder passwordEncoder;
     @Autowired
     private ConfirmationTokenServiceImp confirmationTokenService;
+    @Autowired
+    private INotificationService iNotificationService;
 
     @Override
-    public AuthenticationResponseDTO save(CustomerRequestDTO requestDTO) throws IllegalAccessException {
+    public AuthenticationResponseDTO save(CustomerRequestDTO requestDTO,MultipartFile picture) throws IllegalAccessException {
         if(requestDTO!=null){
-            boolean customerExist = customerRepository.findCustomerByEmail(requestDTO.email()).isPresent();
+            boolean customerExist = customerRepository.findCustomerByEmailAndIsNotDeleted(requestDTO.email()).isPresent();
             boolean isValidEmail = emailValidator.test(requestDTO.email());
             if(customerExist || !isValidEmail){
                 throw new IllegalAccessException("email already taken or  email not valid");
@@ -40,11 +44,14 @@ public class RegistrationServiceImp implements IRegistrationService{
                 Customer customer = Customer.builder()
                         .address(new ArrayList<>())
                         .cards(new ArrayList<>())
-                        .history(new History(null,new ArrayList<>(),new Date()))
+                        .history(new History(null,requestDTO.name()+" "+requestDTO.lastName(),new ArrayList<>(),new Date()))
                         .roles(Arrays.asList(Role.CUSTOMER))
                         .tokens(new ArrayList<>())
                         .confirmationTokens(new ArrayList<>())
                         .enable(false)
+                        .isDeleted(false)
+                        .receiveNotifications(true)
+                        .channelNotifications(channels(requestDTO.channels()))
                         .build();
                 customer.setName(requestDTO.name());
                 customer.setLastName(requestDTO.lastName());
@@ -52,6 +59,13 @@ public class RegistrationServiceImp implements IRegistrationService{
                 customer.setEmail(requestDTO.email());
                 customer.setUsername(requestDTO.username());
                 customer.setPwd(passwordEncoder.encode(requestDTO.pwd()));
+                if(picture!=null){
+                    try {
+                        customer.setPicturePath(convertImageToBase64Image(picture));
+                    } catch (IOException e) {
+                        throw new CustomerException("Error saving the customer image, "+e.getLocalizedMessage());
+                    }
+                }
                 customerRepository.save(customer);
                 return new AuthenticationResponseDTO(resendConfirmationEmail(customer.getEmail())); //confirmation token
             }
@@ -60,14 +74,33 @@ public class RegistrationServiceImp implements IRegistrationService{
             return null;
         }
     }
+    private String convertImageToBase64Image(MultipartFile multipartFile) throws IOException {
+        byte[] bytes = multipartFile.getBytes();
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+    private List<ChannelNotification> channels(List<String> channels){
+       if(!channels.isEmpty()){
+           return channels.stream().map(channel-> {
+               switch (channel){
+                   case "EMAIL":
+                       return ChannelNotification.EMAIL;
+                   case "SMS":
+                       return ChannelNotification.SMS;
+                   default: return null;
+               }
+           }).collect(Collectors.toList());
+       }else{
+           return null;
+       }
+    }
     public String resendConfirmationEmail(String email) {
-        Customer customer = customerRepository.findCustomerByEmail(email)
+        Customer customer = customerRepository.findCustomerByEmailAndIsNotDeleted(email)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
         ConfirmationToken token = generateToken(customer);
 
         String link = "http://localhost:8080/api/v1/authentication/confirm?token=" + token.getToken();
-        iEmailSender.send(customer.getEmail(), buildEmail(customer.getName(), link));
+        iEmailSender.sendEmail(customer.getEmail(), buildEmail(customer.getName(), link),"Confirm your email");
         return token.getToken();
     }
     public ConfirmationToken generateToken(Customer customer) {
@@ -101,6 +134,8 @@ public class RegistrationServiceImp implements IRegistrationService{
                     Customer customer = confirmationToken.getCustomer();
                     customer.setEnable(true);
                     customerRepository.save(customer);
+                    //send email of welcome
+                    sendWelcomeNotification(customer);
                     return "Email confirmed successfully";
                 }
             }
@@ -109,6 +144,34 @@ public class RegistrationServiceImp implements IRegistrationService{
         }
     }
 
+    private void sendWelcomeNotification(Customer c){
+        List<ChannelNotification> channels = c.getChannelNotifications();
+        if(channels!=null && !channels.isEmpty()){
+            for (ChannelNotification channel: channels ) {
+                if(channel.equals(ChannelNotification.EMAIL)){
+                    String message = buildEmailWelcomeMessage();
+                    iNotificationService.notifyByEmailWelcomeNewUser(c.getEmail(),c.getUsername(), buildEmailWelcomeMessage());
+                }
+                if(channel.equals(ChannelNotification.SMS)){
+                    iNotificationService.notifyBySmsWelcomeNewUser(c.getCellphone(),buildSmsWelcomeMessage());
+                }
+            }
+        }
+
+    }
+
+    private String buildEmailWelcomeMessage(){
+       return "<div style=\"font-family:Helvetica, Arial, sans-serif; font-size:16px; margin:0; color:#0b0c0c\">\n" +
+                "    <p style=\"Margin:0 0 20px 0; font-size:19px; line-height:25px; color:#0b0c0c\">Welcome!</p>\n" +
+                "    <p style=\"Margin:0 0 20px 0; font-size:19px; line-height:25px; color:#0b0c0c\">Thank you for confirming your account. We're excited to have you as part of our community.</p>\n" +
+                "    <p style=\"Margin:0 0 20px 0; font-size:19px; line-height:25px; color:#0b0c0c\">If you have any questions or need assistance, feel free to reach out to our support team. Happy shopping!</p>\n" +
+                "</div>";
+    }
+    private String buildSmsWelcomeMessage(){
+        return "Welcome!\n" +
+                "Thank you for confirming your account. We're excited to have you as part of our community.\n" +
+                "If you have any questions or need assistance, feel free to reach out to our support team. Happy shopping!";
+    }
 
     private String buildEmail(String name, String link) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
