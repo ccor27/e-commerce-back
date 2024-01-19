@@ -1,3 +1,4 @@
+
 INSERT INTO customer (cellphone,email,last_name,name,enable,is_deleted,receive_notifications,pwd,username) values ('+34903672134','test@gmail.com','testLast','test',true,false,true,'$2a$10$RQc.XIhtqSv8wpic8XNpfu3S8bRh85KtUXKMGs1SEf5CFy20CL32W','test');
 INSERT INTO customer (cellphone,email,last_name,name,enable,is_deleted,receive_notifications,pwd,username) values ('123456789','test2@gmail.com','test2Last','test2',true,false,true,'$2a$10$7A9UJxtuPmpsKAAR5PfohOWzPFgdvOYfy8rH2C2Ww7ww8.N.HtiQy','test2');
 INSERT INTO customer (cellphone,email,last_name,name,enable,is_deleted,receive_notifications,pwd,username) values ('345222389','test3@gmail.com','osorio','cristian',true,false,true,'$2a$10$7A9UJxtuPmpsKAAR5PfohOWzPFgdvOYfy8rH2C2Ww7ww8.N.HtiQy','rocky');
