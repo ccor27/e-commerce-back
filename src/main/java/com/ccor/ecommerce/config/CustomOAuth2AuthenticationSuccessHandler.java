@@ -20,12 +20,18 @@ import java.io.IOException;
 
 @Configuration
 public class CustomOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    @Autowired
+
     private CustomerRepository customerRepository;
-    @Autowired
     private JwtService jwtService;
-    @Autowired
     private TokenRepository tokenRepository;
+    @Autowired
+    public CustomOAuth2AuthenticationSuccessHandler(
+            CustomerRepository customerRepository, JwtService jwtService, TokenRepository tokenRepository) {
+        this.customerRepository = customerRepository;
+        this.jwtService = jwtService;
+        this.tokenRepository = tokenRepository;
+    }
+
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,

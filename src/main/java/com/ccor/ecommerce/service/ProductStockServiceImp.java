@@ -5,9 +5,10 @@ import com.ccor.ecommerce.exceptions.ProductStockException;
 import com.ccor.ecommerce.model.ProductStock;
 import com.ccor.ecommerce.model.dto.ProductStockRequestDTO;
 import com.ccor.ecommerce.model.dto.ProductStockResponseDTO;
-import com.ccor.ecommerce.repository.CustomerRepository;
 import com.ccor.ecommerce.repository.ProductStockRepository;
 import com.ccor.ecommerce.service.mapper.ProductStockDTOMapper;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,14 +22,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductStockServiceImp implements IProductStockService{
-    @Autowired
     private ProductStockRepository productStockRepository;
-    @Autowired
     private ProductStockDTOMapper productStockDTOMapper;
-    @Autowired
     private INotificationService iNotificationService;
     @Autowired
-    private CustomerRepository customerRepository;
+    public ProductStockServiceImp(ProductStockRepository productStockRepository, ProductStockDTOMapper productStockDTOMapper,
+                                  INotificationService iNotificationService) {
+        this.productStockRepository = productStockRepository;
+        this.productStockDTOMapper = productStockDTOMapper;
+        this.iNotificationService = iNotificationService;
+    }
+
     @Override
     public ProductStockResponseDTO save(ProductStockRequestDTO productStockRequestDTO,MultipartFile picture) {
         if(productStockRequestDTO!=null){
@@ -120,7 +124,6 @@ public class ProductStockServiceImp implements IProductStockService{
     @Override
     public List<ProductStockResponseDTO> findAll(Integer offset,Integer pageSize) {
         Page<ProductStock> list = productStockRepository.findAll(PageRequest.of(offset,pageSize));
-        //List<ProductStock> list = productStockRepository.findAll();
         if(list!=null && !list.isEmpty()){
 
             int totalProducts = productStockRepository.countProductStock();
@@ -190,16 +193,18 @@ public class ProductStockServiceImp implements IProductStockService{
     }
 
     @Override
-    //TODO: refactor this to use the availableAmount from the repository
+    @Transactional
     public ProductStockResponseDTO sellProduct(int amountSold, String barCode) {
-        ProductStock productStock = productStockRepository.amountIsAvailable(barCode,amountSold).orElse(null);
-        if(productStock!=null){
-                int stockAmount = productStock.getAmount();
-                productStock.setAmount(stockAmount-amountSold);
-                productStock.setEnableProduct(productStock.getAmount()>0 ? true:false);
-                return productStockDTOMapper.apply(productStockRepository.save(productStock));
-        }else{
-            throw new ProductStockException("The product to sell doesn't exist or The are not the amount requested");
+        ProductStock productStock = productStockRepository.amountIsAvailableAndLocking(barCode,amountSold).orElse(null);
+        try{
+            Long currentVersion= productStock.getVersion();
+            productStock.setAmount(productStock.getAmount()-amountSold);
+            productStock.setEnableProduct(productStock.getAmount()>0 ? true:false);
+            return productStockDTOMapper.apply(productStockRepository.save(productStock));
+        }catch (OptimisticLockException e){
+            throw  new ProductStockException(e.getLocalizedMessage());
+        }catch (NullPointerException e){
+            throw new ProductStockException("Product stock not found for barcode: " + barCode);
         }
     }
 

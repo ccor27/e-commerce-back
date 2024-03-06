@@ -3,6 +3,7 @@ package com.ccor.ecommerce.model;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.util.Date;
@@ -26,5 +27,6 @@ public class Payment {
     @ManyToOne
     @JoinColumn(name = "credit_card_id")
     private CreditCard card;
+    @Min(0)
     private int totalPrice;
 }

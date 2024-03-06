@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.CancelSaleException;
 import com.ccor.ecommerce.model.CanceledSale;
 import com.ccor.ecommerce.model.dto.CanceledSaleResponseDTO;
 import com.ccor.ecommerce.repository.CanceledSaleRepository;
@@ -16,17 +17,20 @@ import java.util.stream.Collectors;
 @Service
 public class CanceledSaleServiceImpService implements ICanceledSaleService {
 
-    @Autowired
     private CanceledSaleRepository canceledSaleRepository;
-    @Autowired
     private CanceledSaleDTOMapper canceledSaleDTOMapper;
+    @Autowired
+    public CanceledSaleServiceImpService(CanceledSaleRepository canceledSaleRepository, CanceledSaleDTOMapper canceledSaleDTOMapper) {
+        this.canceledSaleRepository = canceledSaleRepository;
+        this.canceledSaleDTOMapper = canceledSaleDTOMapper;
+    }
 
     @Override
     public CanceledSaleResponseDTO save(CanceledSale canceledSale) {
         if(canceledSale!=null){
             return canceledSaleDTOMapper.apply(canceledSaleRepository.save(canceledSale));
         }else{
-            return null;
+            throw new CancelSaleException("The canceled sale is null, therefore is not possible save it");
         }
     }
 
@@ -36,7 +40,7 @@ public class CanceledSaleServiceImpService implements ICanceledSaleService {
         if(c!=null){
             return canceledSaleDTOMapper.apply(c);
         }else{
-            return null;
+            throw new CancelSaleException("The canceled sale doesn't exist");
         }
     }
 
@@ -49,15 +53,14 @@ public class CanceledSaleServiceImpService implements ICanceledSaleService {
             int adjustedOffset = pageSize*offset;
             adjustedOffset = Math.min(adjustedOffset,totalCanceledSales);
             if(adjustedOffset>=totalCanceledSales){
-                //error
-                return null;
+                throw new CancelSaleException("There are not enough entities to show in a list");
             }else{
                 return list.stream().map(canceledSale -> {
                     return canceledSaleDTOMapper.apply(canceledSale);
                 }).collect(Collectors.toList());
             }
         }else{
-            return null;
+            throw new CancelSaleException("There are not entities to show");
         }
     }
 
@@ -67,7 +70,7 @@ public class CanceledSaleServiceImpService implements ICanceledSaleService {
         if(c!=null){
             canceledSaleRepository.delete(c);
         }else{
-            //error
+            throw new CancelSaleException("The canceled sale to remove doesn't exist");
         }
     }
 

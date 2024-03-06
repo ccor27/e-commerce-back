@@ -39,14 +39,20 @@ import static com.ccor.ecommerce.model.Role.CUSTOMER;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
-    @Autowired
     private AuthenticationProvider authenticationProvider;
-    @Autowired
     private LogoutService logoutService;
-    @Autowired
     private CustomOAuth2AuthenticationSuccessHandler customOAuth2AuthenticationSuccessHandler;
+    @Autowired
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider,
+            LogoutService logoutService, CustomOAuth2AuthenticationSuccessHandler customOAuth2AuthenticationSuccessHandler){
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authenticationProvider = authenticationProvider;
+        this.logoutService = logoutService;
+        this.customOAuth2AuthenticationSuccessHandler = customOAuth2AuthenticationSuccessHandler;
+    }
+
     private static final String[] adminUrls =
                         {
                                 "/api/v1/customer/{id}/remove",
@@ -115,7 +121,7 @@ public class SecurityConfig {
                          "/api/v1/productStock/find/enable",
                          "/api/v1/productStock/{barCode}/sell/{amount}",
                          "/api/v1/customer/{id}/change/pwd/{pwd}",
-                         "/api/v1/customer/find/by/tk/{token}",
+                         "/api/v1/customer/profile",
                          "/api/v1/payment/save",
                          "/api/v1/payment/{customerId}/confirm/{paymentId}",
                          "/api/v1/payment/{customerId}/cancel/{paymentId}",

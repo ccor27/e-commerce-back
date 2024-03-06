@@ -21,12 +21,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class AddressServiceImp implements IAddressService {
-    @Autowired
     private AddressRepository addressRepository;
-    @Autowired
     private CustomerRepository customerRepository;
-    @Autowired
     private AddressDTOMapper addressDTOMapper;
+   @Autowired
+    public AddressServiceImp(AddressRepository addressRepository, CustomerRepository customerRepository,
+                             AddressDTOMapper addressDTOMapper) {
+        this.addressRepository = addressRepository;
+        this.customerRepository = customerRepository;
+        this.addressDTOMapper = addressDTOMapper;
+    }
 
     @Override
     public AddressResponseDTO save(AddressRequestDTO addressRequestDTO) {

@@ -31,10 +31,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/authentication")
 public class AuthenticationController {
-    @Autowired
     private ICustomerService iCustomerService;
-    @Autowired
     private IRegistrationService iRegistrationService;
+    @Autowired
+    public AuthenticationController(ICustomerService iCustomerService, IRegistrationService iRegistrationService) {
+        this.iCustomerService = iCustomerService;
+        this.iRegistrationService = iRegistrationService;
+    }
+
     @PostMapping(value = "/save",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> save(@RequestPart("requestDTO") CustomerRequestDTO requestDTO,
                                   @RequestPart("picture") MultipartFile picture)  {

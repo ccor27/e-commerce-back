@@ -17,10 +17,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductSoldServiceImp implements IProductSoldService{
-    @Autowired
     private ProductSoldRepository productSoldRepository;
-    @Autowired
     private ProductSoldDTOMapper productSoldDTOMapper;
+    @Autowired
+    public ProductSoldServiceImp(ProductSoldRepository productSoldRepository, ProductSoldDTOMapper productSoldDTOMapper) {
+        this.productSoldRepository = productSoldRepository;
+        this.productSoldDTOMapper = productSoldDTOMapper;
+    }
+
     @Override
     public ProductSoldResponseDTO save(ProductSoldRequestDTO productSoldRequestDTO) {
         if(productSoldRequestDTO!=null){

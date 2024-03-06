@@ -15,8 +15,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/card")
 public class CreditCardController {
-    @Autowired
+
     private ICreditCardService iCreditCardService;
+    @Autowired
+    public CreditCardController(ICreditCardService iCreditCardService) {
+        this.iCreditCardService = iCreditCardService;
+    }
+
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody CreditCardRequestDTO requestDTO){
         try {

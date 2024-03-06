@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.ProductStockException;
 import com.ccor.ecommerce.exceptions.SaleException;
 import com.ccor.ecommerce.model.*;
 import com.ccor.ecommerce.model.dto.*;
@@ -12,6 +13,7 @@ import com.stripe.exception.StripeException;
 
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,24 +28,32 @@ import java.util.stream.Collectors;
 public class SaleServiceImp implements ISaleService{
     @Value("${stripe.test.secret.key}")
     private String stripeSecretKey;
-    @Autowired
     private SaleRepository saleRepository;
-    @Autowired
     private CreditCardRepository creditCardRepository;
-    @Autowired
     private CustomerRepository customerRepository;
-    @Autowired
     private ICanceledSaleService iCanceledSaleService;
-    @Autowired
     private IProductStockService iProductStockService;
-    @Autowired
     private INotificationService iNotificationService;
-    @Autowired
     private SaleDTOMapper saleDTOMapper;
-    @Autowired
     private PaymentDTOMapper paymentDTOMapper;
-    @Autowired
     private ProductSoldDTOMapper productSoldDTOMapper;
+    @Autowired
+    public SaleServiceImp(SaleRepository saleRepository, CreditCardRepository creditCardRepository,
+                          CustomerRepository customerRepository, ICanceledSaleService iCanceledSaleService,
+                          IProductStockService iProductStockService, INotificationService iNotificationService,
+                          SaleDTOMapper saleDTOMapper, PaymentDTOMapper paymentDTOMapper,
+                          ProductSoldDTOMapper productSoldDTOMapper) {
+        this.saleRepository = saleRepository;
+        this.creditCardRepository = creditCardRepository;
+        this.customerRepository = customerRepository;
+        this.iCanceledSaleService = iCanceledSaleService;
+        this.iProductStockService = iProductStockService;
+        this.iNotificationService = iNotificationService;
+        this.saleDTOMapper = saleDTOMapper;
+        this.paymentDTOMapper = paymentDTOMapper;
+        this.productSoldDTOMapper = productSoldDTOMapper;
+    }
+
     @Override
     @Transactional
     public SaleResponseDTO save(SaleRequestDTO saleRequestDTO,Long customerId) {
@@ -55,7 +65,11 @@ public class SaleServiceImp implements ISaleService{
             if(saleRequestDTO.products()!=null){
                 List<ProductSold> productSold = new ArrayList<>();
                 for (ProductSoldRequestDTO productSoldRequestDTO:saleRequestDTO.products() ) {
-                     iProductStockService.sellProduct(productSoldRequestDTO.amount(), productSoldRequestDTO.barCode());
+                    try {
+                        iProductStockService.sellProduct(productSoldRequestDTO.amount(), productSoldRequestDTO.barCode());
+                    }catch (ProductStockException e){
+                        throw new SaleException(e.getLocalizedMessage());
+                    }
                     productSold.add(new ProductSold(null, productSoldRequestDTO.barCode(), productSoldRequestDTO.name(),
                                          productSoldRequestDTO.amount(), productSoldRequestDTO.price()));
                     totalPrice+=productSoldRequestDTO.price();
@@ -114,7 +128,7 @@ public class SaleServiceImp implements ISaleService{
                 sale = saleRepository.save(sale);
                 h.getSales().add(sale);
                 customerRepository.saveAndFlush(c);
-                saleCreatedNotification(c);
+                //saleCreatedNotification(c);
                 return saleDTOMapper.apply(sale);
 
             } catch (StripeException e) {
@@ -253,6 +267,7 @@ public class SaleServiceImp implements ISaleService{
     }
 
     @Override
+    @Transactional
     public void cancelSale(Long paymentId) {
      Sale s = saleRepository.findSaleByPayment(paymentId);
      if(s!=null){

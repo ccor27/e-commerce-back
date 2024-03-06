@@ -25,14 +25,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/history")
 public class HistoryController {
-    @Autowired
+
     private IHistoryService iHistoryService;
-    @Qualifier("History")
-    @Autowired
     private IExportExcelService iExportExcelService;
-    @Qualifier("History")
-    @Autowired
     private IExportPdfService iExportPdfService;
+    @Autowired
+    public HistoryController(
+            IHistoryService iHistoryService,
+            @Qualifier("History") IExportExcelService iExportExcelService,
+            @Qualifier("History") IExportPdfService iExportPdfService) {
+        this.iHistoryService = iHistoryService;
+        this.iExportExcelService = iExportExcelService;
+        this.iExportPdfService = iExportPdfService;
+    }
+
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody HistoryRequestDTO historyRequestDTO){
      try {

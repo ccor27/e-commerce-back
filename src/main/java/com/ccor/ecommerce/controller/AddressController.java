@@ -22,11 +22,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/address")
 public class AddressController {
-    @Autowired
+
     private IAddressService iAddressService;
-    @Qualifier("address")
-    @Autowired
     private IExportExcelService iExportExcelService;
+    @Autowired
+    public AddressController(IAddressService iAddressService,
+                             @Qualifier("address") IExportExcelService iExportExcelService) {
+        this.iAddressService = iAddressService;
+        this.iExportExcelService = iExportExcelService;
+    }
+
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody AddressRequestDTO addressRequestDTO){
         try {

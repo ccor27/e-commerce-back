@@ -13,6 +13,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCancelParams;
 import com.stripe.param.PaymentIntentConfirmParams;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -26,20 +27,26 @@ import java.util.stream.Collectors;
 @Service
 public class PaymentServiceImp implements IPaymentService{
 
-    @Autowired
     private PaymentRepository paymentRepository;
-    @Autowired
     private CreditCardRepository creditCardRepository;
-    @Autowired
     private CustomerRepository customerRepository;
-    @Autowired
     private PaymentDTOMapper paymentDTOMapper;
-    @Autowired
     private CreditCardDTOMapper creditCardDTOMapper;
-    @Autowired
     private ISaleService iSaleService;
-    @Autowired
     private INotificationService iNotificationService;
+    @Autowired
+    public PaymentServiceImp(PaymentRepository paymentRepository, CreditCardRepository creditCardRepository,
+                             CustomerRepository customerRepository, PaymentDTOMapper paymentDTOMapper,
+                             CreditCardDTOMapper creditCardDTOMapper, ISaleService iSaleService,
+                             INotificationService iNotificationService) {
+        this.paymentRepository = paymentRepository;
+        this.creditCardRepository = creditCardRepository;
+        this.customerRepository = customerRepository;
+        this.paymentDTOMapper = paymentDTOMapper;
+        this.creditCardDTOMapper = creditCardDTOMapper;
+        this.iSaleService = iSaleService;
+        this.iNotificationService = iNotificationService;
+    }
 
     @Override
     public PaymentResponseDTO save(PaymentRequestDTO paymentRequestDTO) {
@@ -82,6 +89,7 @@ public class PaymentServiceImp implements IPaymentService{
     }
 
     @Override
+    @Transactional
     public PaymentResponseDTO cancel(Long id,Long customerId) {
         Payment p = paymentRepository.findById(id).orElse(null);
         if(p!=null){
@@ -131,14 +139,11 @@ public class PaymentServiceImp implements IPaymentService{
         }
     }
     private StatusPayment knowStatus(String status){
-        switch (status.toLowerCase()){
-            case "paid":
-                return StatusPayment.PAID;
-            case "unpaid":
-                return StatusPayment.UNPAID;
-            default:
-                return null;
-        }
+        return switch (status.toLowerCase()) {
+            case "paid" -> StatusPayment.PAID;
+            case "unpaid" -> StatusPayment.UNPAID;
+            default -> null;
+        };
     }
     private CreditCard findCreditCard(Long id){
        CreditCard c = creditCardRepository.findById(id).orElse(null);
@@ -190,7 +195,6 @@ public class PaymentServiceImp implements IPaymentService{
             payment.setStatusPayment(StatusPayment.CANCEL);
             payment.setDeleted(true);
             paymentRepository.save(payment);
-          //paymentRepository.delete(payment);
           return true;
         }else{
             throw new PaymentException("The payment fetched to delete doesn't exist");

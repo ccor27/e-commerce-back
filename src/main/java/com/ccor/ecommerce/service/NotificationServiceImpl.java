@@ -8,6 +8,7 @@ import com.ccor.ecommerce.service.registration.IEmailSender;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -17,9 +18,7 @@ import java.util.List;
 
 @Service
 public class NotificationServiceImpl implements INotificationService {
-    @Autowired
     private CustomerRepository customerRepository;
-    @Autowired
     private IEmailSender iEmailSender;
     @Value("${notification.sms.account}")
     private String ACCOUNT_SID;
@@ -27,8 +26,15 @@ public class NotificationServiceImpl implements INotificationService {
     private String AUTH_TOKEN;
     @Value("${notification.sms.phone}")
     private String TWILIO_NUMBER;
+    @Autowired
+    public NotificationServiceImpl(CustomerRepository customerRepository, IEmailSender iEmailSender) {
+        this.customerRepository = customerRepository;
+        this.iEmailSender = iEmailSender;
+    }
 
     @Override
+    @Transactional
+    @Async
     public void notifyByEmailNewProduct(String message) {
         List<Customer> customers = customerRepository.findAllNotDeletedAndCanReceiveNotifications();
         if(customers!=null && !customers.isEmpty()){
@@ -42,6 +48,7 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Transactional
     @Async
     public void notifyBySmsNewProduct(String message) {
         List<Customer> customers = customerRepository.findAllNotDeletedAndCanReceiveNotifications();
@@ -62,6 +69,7 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Async
     public void notifyByEmailWelcomeNewUser(String email,String username, String message) {
         String messageToSend = buildEmailNotification(username,message);
         iEmailSender.sendEmail(email,messageToSend,"Welcome to our ecommerce");
@@ -80,6 +88,8 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Transactional
+    @Async
     public void notifyByEmailNewSale(Long customerId, String message) {
      Customer c = customerRepository.findById(customerId).orElse(null);
      if(c!=null){
@@ -89,6 +99,7 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Transactional
     @Async
     public void notifyBySmsNewSale(Long customerId, String message) {
         Customer c = customerRepository.findById(customerId).orElse(null);
@@ -104,6 +115,8 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Transactional
+    @Async
     public void notifyByEmailConfirmedPayment(Long customerId, String message) {
      Customer c = customerRepository.findById(customerId).orElse(null);
      if(c!=null){
@@ -113,6 +126,7 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Transactional
     @Async
     public void notifyBySmsConfirmedPayment(Long customerId, String message) {
         Customer c = customerRepository.findById(customerId).orElse(null);
@@ -128,6 +142,8 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Transactional
+    @Async
     public void notifyByEmailPaymentCancelled(Long customerId, String message) {
         Customer c = customerRepository.findById(customerId).orElse(null);
         if(c!=null){
@@ -137,6 +153,7 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
+    @Transactional
     @Async
     public void notifyBySmsPaymentCancelled(Long customerId, String message) {
         Customer c = customerRepository.findById(customerId).orElse(null);

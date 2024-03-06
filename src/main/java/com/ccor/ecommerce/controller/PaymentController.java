@@ -22,11 +22,15 @@ import java.util.List;
 @RequestMapping("/api/v1/payment")
 public class PaymentController {
 
-    @Autowired
+
     private IPaymentService iPaymentService;
-    @Qualifier("Payment")
-    @Autowired
     private IExportExcelService iExportExcelService;
+    @Autowired
+    public PaymentController(IPaymentService iPaymentService,  @Qualifier("Payment")IExportExcelService iExportExcelService) {
+        this.iPaymentService = iPaymentService;
+        this.iExportExcelService = iExportExcelService;
+    }
+
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody PaymentRequestDTO paymentRequestDTO){
         try {

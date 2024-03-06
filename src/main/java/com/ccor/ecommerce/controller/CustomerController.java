@@ -23,14 +23,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/customer")
 public class CustomerController {
-    @Autowired
+
     private ICustomerService iCustomerService;
-    @Qualifier("Customer")
-    @Autowired
     private IExportExcelService iExportExcelService;
-    @Qualifier("Customer")
-    @Autowired
     private IExportPdfService iExportPdfService;
+    @Autowired
+    public CustomerController(
+            ICustomerService iCustomerService,
+            @Qualifier("Customer") IExportExcelService iExportExcelService,
+             @Qualifier("Customer")IExportPdfService iExportPdfService) {
+        this.iCustomerService = iCustomerService;
+        this.iExportExcelService = iExportExcelService;
+        this.iExportPdfService = iExportPdfService;
+    }
 
     @DeleteMapping("/{id}/remove")
     public ResponseEntity<?> remove(@PathVariable("id") Long id){
@@ -229,9 +234,10 @@ public class CustomerController {
         }
 
     }
-    @GetMapping("/find/by/tk/{token}")
-    public ResponseEntity<?> findCustomerByToken(@PathVariable("token")String token){
+    @GetMapping("/profile")
+    public ResponseEntity<?> findCustomerByToken(@RequestHeader("Authorization") String authorization){
         try {
+            String token =authorization.replace("Bearer ","");
             CustomerResponseDTO responseDTO = iCustomerService.getCustomerByToken(token);
             return new ResponseEntity<>(responseDTO,HttpStatus.FOUND);
         }catch (CustomerException ex){

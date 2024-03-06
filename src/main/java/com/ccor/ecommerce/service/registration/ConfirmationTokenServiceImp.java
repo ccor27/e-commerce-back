@@ -11,8 +11,13 @@ import java.util.Optional;
 
 @Service
 public class ConfirmationTokenServiceImp implements IConfirmationToken{
-    @Autowired
+
     private ConfirmationTokenRepository confirmationTokenRepository;
+    @Autowired
+    public ConfirmationTokenServiceImp(ConfirmationTokenRepository confirmationTokenRepository) {
+        this.confirmationTokenRepository = confirmationTokenRepository;
+    }
+
     @Transactional
     @Override
     public void saveConfirmationToken(ConfirmationToken token) {

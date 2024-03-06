@@ -12,8 +12,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class LogoutService implements LogoutHandler {
 
-    @Autowired
+
     private TokenRepository tokenRepository;
+    @Autowired
+    public LogoutService(TokenRepository tokenRepository) {
+        this.tokenRepository = tokenRepository;
+    }
 
     /**
      * Method to invalidate a customer's token (make logout)

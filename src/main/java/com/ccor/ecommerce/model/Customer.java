@@ -2,6 +2,7 @@ package com.ccor.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -37,6 +38,7 @@ public class Customer extends Person implements UserDetails {
     private boolean isDeleted;
     private boolean receiveNotifications;
     @Column(unique = true)
+    @Size(min=3)
     private String username;
     private String pwd;
     @Lob

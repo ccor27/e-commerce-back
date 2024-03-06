@@ -1,9 +1,11 @@
 package com.ccor.ecommerce.repository;
 
 import com.ccor.ecommerce.model.ProductStock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -20,8 +22,9 @@ public interface ProductStockRepository extends JpaRepository<ProductStock,Long>
     boolean existsByBarCode(String barcode);
     @Query("SELECT COUNT(p) FROM ProductStock p WHERE p.enableProduct=true")
     int countByEnableProduct();
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     @Query("SELECT p FROM ProductStock  p WHERE p.barCode=:barCode AND p.enableProduct=true AND p.amount>=:amountToSell")
-    Optional<ProductStock> amountIsAvailable(@Param("barCode") String barCode,@Param("amountToSell") int amountToSell);
+    Optional<ProductStock> amountIsAvailableAndLocking(@Param("barCode") String barCode, @Param("amountToSell") int amountToSell);
     @Query("SELECT COUNT(*) FROM ProductStock p WHERE p.enableProduct=true ")
     int countProductStock();
 }

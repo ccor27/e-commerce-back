@@ -24,12 +24,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/productStock")
 public class ProductStockController {
-    @Autowired
     private IProductStockService iProductStockService;
-    @Qualifier("ProductStock")
-    @Autowired
     private IExportExcelService iExportExcelService;
-//    @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+    @Autowired
+    public ProductStockController(IProductStockService iProductStockService,@Qualifier("ProductStock") IExportExcelService iExportExcelService) {
+        this.iProductStockService = iProductStockService;
+        this.iExportExcelService = iExportExcelService;
+    }
+
     @PostMapping(value = "/save",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> save(@RequestPart("productRequest") ProductStockRequestDTO productRequest,
                                   @RequestPart("picture") MultipartFile picture){

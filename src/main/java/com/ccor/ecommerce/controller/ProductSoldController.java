@@ -22,11 +22,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/productSold")
 public class ProductSoldController {
-    @Autowired
     private IProductSoldService iProductSoldService;
-    @Qualifier("ProductSold")
-    @Autowired
     private IExportExcelService iExportExcelService;
+    @Autowired
+    public ProductSoldController(IProductSoldService iProductSoldService, @Qualifier("ProductSold") IExportExcelService iExportExcelService) {
+        this.iProductSoldService = iProductSoldService;
+        this.iExportExcelService = iExportExcelService;
+    }
+
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody ProductSoldRequestDTO productSoldRequestDTO){
         try {

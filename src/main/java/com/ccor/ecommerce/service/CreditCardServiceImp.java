@@ -22,12 +22,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class CreditCardServiceImp implements ICreditCardService{
-    @Autowired
     private CreditCardRepository creditCardRepository;
-    @Autowired
     private CustomerRepository customerRepository;
-    @Autowired
     private CreditCardDTOMapper dtoMapper;
+    @Autowired
+    public CreditCardServiceImp(CreditCardRepository creditCardRepository, CustomerRepository customerRepository, CreditCardDTOMapper dtoMapper) {
+        this.creditCardRepository = creditCardRepository;
+        this.customerRepository = customerRepository;
+        this.dtoMapper = dtoMapper;
+    }
 
     @Override
     public CreditCardResponseDTO save(CreditCardRequestDTO requestDTO) {

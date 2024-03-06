@@ -26,14 +26,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/sale")
 public class SaleController {
-    @Autowired
+
     private ISaleService iSaleService;
-    @Qualifier("Sale")
-    @Autowired
     private IExportExcelService iExportExcelService;
-    @Qualifier("Sale")
-    @Autowired
     private IExportPdfService iExportPdfService;
+    @Autowired
+    public SaleController(
+            ISaleService iSaleService,
+            @Qualifier("Sale") IExportExcelService iExportExcelService,
+            @Qualifier("Sale")IExportPdfService iExportPdfService) {
+        this.iSaleService = iSaleService;
+        this.iExportExcelService = iExportExcelService;
+        this.iExportPdfService = iExportPdfService;
+    }
+
     @PostMapping("/{customerId}/save")
     public ResponseEntity<?> save(@RequestBody SaleRequestDTO saleRequestDTO,
                                   @PathVariable("customerId") Long customerId){

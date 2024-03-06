@@ -20,20 +20,27 @@ import java.util.stream.Collectors;
 @Service
 public class RegistrationServiceImp implements IRegistrationService{
 
-    @Autowired
     private CustomerRepository customerRepository;
-    @Autowired
     private EmailValidator emailValidator;
-    @Autowired
     private IEmailSender iEmailSender;
-    @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
     private ConfirmationTokenServiceImp confirmationTokenService;
-    @Autowired
     private INotificationService iNotificationService;
+    @Autowired
+    public RegistrationServiceImp(CustomerRepository customerRepository, EmailValidator emailValidator,
+                                  IEmailSender iEmailSender, PasswordEncoder passwordEncoder,
+                                  ConfirmationTokenServiceImp confirmationTokenService,
+                                  INotificationService iNotificationService) {
+        this.customerRepository = customerRepository;
+        this.emailValidator = emailValidator;
+        this.iEmailSender = iEmailSender;
+        this.passwordEncoder = passwordEncoder;
+        this.confirmationTokenService = confirmationTokenService;
+        this.iNotificationService = iNotificationService;
+    }
 
     @Override
+    @Transactional
     public AuthenticationResponseDTO save(CustomerRequestDTO requestDTO,MultipartFile picture) throws IllegalAccessException {
         if(requestDTO!=null){
             boolean customerExist = customerRepository.findCustomerByEmailAndIsNotDeleted(requestDTO.email()).isPresent();

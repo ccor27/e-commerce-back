@@ -26,15 +26,21 @@ import java.util.stream.Collectors;
 
 @Service
 public class HistoryServiceImp implements IHistoryService{
-    @Autowired
     private HistoryRepository historyRepository;
-    @Autowired
     private HistoryDTOMapper historyDTOMapper;
-    @Autowired
     private SaleDTOMapper saleDTOMapper;
-    @Autowired
     private SaleRepository saleRepository;
+    @Autowired
+    public HistoryServiceImp(HistoryRepository historyRepository, HistoryDTOMapper historyDTOMapper,
+                             SaleDTOMapper saleDTOMapper, SaleRepository saleRepository) {
+        this.historyRepository = historyRepository;
+        this.historyDTOMapper = historyDTOMapper;
+        this.saleDTOMapper = saleDTOMapper;
+        this.saleRepository = saleRepository;
+    }
+
     @Override
+    @Transactional
     public HistoryResponseDTO save(HistoryRequestDTO historyRequestDTO) {
         if(historyRequestDTO!=null){
             History history = new History().builder()
@@ -100,6 +106,7 @@ public class HistoryServiceImp implements IHistoryService{
     }
 
     @Override
+    @Transactional
     public List<SaleResponseDTO> findSales(Long id,Integer offset, Integer pageSize) {
         Page<Sale> list = historyRepository.findHistorySales(id,PageRequest.of(offset,pageSize));
         if(list!=null ){
@@ -110,7 +117,6 @@ public class HistoryServiceImp implements IHistoryService{
             throw new HistoryException("The list of history's sales is null");
         }
     }
-    //TODO: this method return a pageable with 10 elements in the 0 page
 
     @Override
     @Transactional

@@ -22,12 +22,16 @@ import java.io.IOException;
 @Configuration
 @EnableWebSecurity
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired
     private JwtService jwtService;
-    @Autowired
     private UserDetailsService userDetailsService;
-    @Autowired
     private TokenRepository tokenRepository;
+    @Autowired
+    public JwtAuthenticationFilter(
+            JwtService jwtService,UserDetailsService userDetailsService,TokenRepository tokenRepository){
+        this.tokenRepository=tokenRepository;
+        this.jwtService=jwtService;
+        this.userDetailsService=userDetailsService;
+    }
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,

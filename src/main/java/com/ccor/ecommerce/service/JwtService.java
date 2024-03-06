@@ -60,4 +60,8 @@ public class JwtService {
         byte[] KeyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(KeyBytes);
     }
+    public Long getCustomerIdFromToken(String token){
+        final Claims claims = extractAllClaims(token);
+        return Long.parseLong(claims.get("id").toString());
+    }
 }

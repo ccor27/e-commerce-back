@@ -26,10 +26,14 @@ import java.util.List;
 @RequestMapping("/cancelled")
 public class CanceledSaleController {
 
-    @Autowired private ICanceledSaleService iCanceledSaleService;
-    @Qualifier("canceledSale")
-    @Autowired
+    private ICanceledSaleService iCanceledSaleService;
     private IExportExcelService iExportExcelService;
+
+    public CanceledSaleController(ICanceledSaleService iCanceledSaleService,
+                                  @Qualifier("canceledSale") IExportExcelService iExportExcelService) {
+        this.iCanceledSaleService = iCanceledSaleService;
+        this.iExportExcelService = iExportExcelService;
+    }
 
     @GetMapping("/find/{id}")
     public ResponseEntity<?> findById(@PathVariable("id") Long id){

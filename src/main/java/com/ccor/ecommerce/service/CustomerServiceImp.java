@@ -1,5 +1,6 @@
 package com.ccor.ecommerce.service;
 
+import com.ccor.ecommerce.exceptions.CancelSaleException;
 import com.ccor.ecommerce.exceptions.CustomerException;
 import com.ccor.ecommerce.model.*;
 import com.ccor.ecommerce.model.dto.*;
@@ -21,34 +22,40 @@ import java.util.stream.Collectors;
 @Service
 public class CustomerServiceImp implements ICustomerService{
 
-    @Autowired
     private CustomerRepository customerRepository;
-    @Autowired
     private AddressRepository addressRepository;
-    @Autowired
     private CreditCardRepository creditCardRepository;
-    @Autowired
     private TokenRepository tokenRepository;
-    @Autowired
     private CustomerDTOMapper customerDTOMapper;
-    @Autowired
     private HistoryDTOMapper historyDTOMapper;
-    @Autowired
     private AddressDTOMapper addressDTOMapper;
-    @Autowired
     private CreditCardDTOMapper creditCardDTOMapper;
-    @Autowired
     private SaleDTOMapper saleDTOMapper;
-    @Autowired
     private PaymentDTOMapper paymentDTOMapper;
-    @Autowired
     private AuthenticationManager authenticationManager;
-    @Autowired
     private JwtService jwtService;
-    @Autowired
     private PasswordEncoder passwordEncoder;
-
-
+     @Autowired
+    public CustomerServiceImp(CustomerRepository customerRepository, AddressRepository addressRepository,
+                              CreditCardRepository creditCardRepository, TokenRepository tokenRepository,
+                              CustomerDTOMapper customerDTOMapper, HistoryDTOMapper historyDTOMapper,
+                              AddressDTOMapper addressDTOMapper, CreditCardDTOMapper creditCardDTOMapper,
+                              SaleDTOMapper saleDTOMapper, PaymentDTOMapper paymentDTOMapper,
+                              AuthenticationManager authenticationManager, JwtService jwtService, PasswordEncoder passwordEncoder) {
+        this.customerRepository = customerRepository;
+        this.addressRepository = addressRepository;
+        this.creditCardRepository = creditCardRepository;
+        this.tokenRepository = tokenRepository;
+        this.customerDTOMapper = customerDTOMapper;
+        this.historyDTOMapper = historyDTOMapper;
+        this.addressDTOMapper = addressDTOMapper;
+        this.creditCardDTOMapper = creditCardDTOMapper;
+        this.saleDTOMapper = saleDTOMapper;
+        this.paymentDTOMapper = paymentDTOMapper;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     private void saveCustomerToken (Customer customer, String jwtToken){
         Token token = new Token(
@@ -72,6 +79,7 @@ public class CustomerServiceImp implements ICustomerService{
         tokenRepository.saveAll(validCustomerTokens);
     }
     @Override
+    @Transactional
     public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO authenticationRequestDTO) {
         String username =authenticationRequestDTO.username();
         String pwd = authenticationRequestDTO.password();
@@ -87,7 +95,7 @@ public class CustomerServiceImp implements ICustomerService{
             saveCustomerToken(customer,jwtToken);
             return new AuthenticationResponseDTO(jwtToken);
         }else{
-            return null;
+            throw new CancelSaleException("The credentials are not correct!");
         }
 
     }
@@ -97,7 +105,7 @@ public class CustomerServiceImp implements ICustomerService{
         if(customer!=null){
             return customerDTOMapper.apply(customer);
         }else {
-           throw new CustomerException("The customer fetched by token doesn't exist");
+           throw new CustomerException("The customer fetched by token doesn't exist or the token is not valid");
         }
     }
     @Override
@@ -197,6 +205,7 @@ public class CustomerServiceImp implements ICustomerService{
     }
 
     @Override
+    @Transactional
     public List<SaleResponseDTO> findCustomerSales(Long id) {
         if(customerRepository.existsById(id)){
             List<Sale> list = customerRepository.findCustomerSales(id);
@@ -213,6 +222,7 @@ public class CustomerServiceImp implements ICustomerService{
     }
 
     @Override
+    @Transactional
     public List<PaymentResponseDTO> findCustomerPayments(Long id) {
         if(customerRepository.existsById(id)){
             List<Payment> list = customerRepository.findCustomerPayments(id);
@@ -311,7 +321,8 @@ public class CustomerServiceImp implements ICustomerService{
         }
     }
 
-    //in the methods add address, remove address, add card and remove card only return pageable with 10 elements in the 0 page
+    //in the methods add address, remove address, add card and remove card only return pageable with 10 elements
+    // in the 0 page
     @Override
     @Transactional
     public List<AddressResponseDTO> addAddress(AddressResponseDTO dto, Long id) {
